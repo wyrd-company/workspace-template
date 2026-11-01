@@ -4,7 +4,7 @@ description: A devcontainer workspace with agent, workflow, and memory folders
 data:
   default_org: wyrd-company
   default_domain: wyrd.internal
-  default_nats_url: nats.wyrd.internal
+  default_nats_url: nats://nats.wyrd.internal:4222
   default_open_observe_url: openobserve.internal:5081
 
 interview:
