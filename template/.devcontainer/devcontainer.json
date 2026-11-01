@@ -152,12 +152,6 @@
             "target": "/tasks",
             "type": "bind"
         },
-        // Workspace ==========================================================
-        {   // Project folders
-            "source": "${localWorkspaceFolder}/workspace",
-            "target": "/workspace",
-            "type": "bind"
-        },
         // Workspace Config ===================================================
         {
             "source": "${localWorkspaceFolder}/config.yml",
