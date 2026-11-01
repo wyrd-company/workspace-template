@@ -165,8 +165,8 @@
             "type": "bind"
         },
         // Wyrwood ============================================================
-        {
-            "source": "/run/wyrwood/containers/{{ workspace }}",
+        {   // The agent names the directory after the container's Docker name (runArgs --name)
+            "source": "/run/wyrwood/containers/devcontainer-{{ workspace }}",
             "target": "/run/wyrwood",
             "type": "bind"
         }

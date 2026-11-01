@@ -70,12 +70,19 @@ Each container runs [`sshd` via S6-overlay](https://github.com/wyrd-company/devc
 
 ## Wyrwood
 
-[Wyrwood](https://wyrd.foo/docs/wyrwood/) delivers OpenBao secrets and SSH signing. The container holds no token, key, or secret file. The Wyrwood agent on the host publishes two sockets in `/run/wyrwood/containers/<workspace>`, bind-mounted at `/run/wyrwood`:
+[Wyrwood](https://wyrd.foo/docs/wyrwood/) delivers OpenBao secrets and SSH signing. The container holds no token, key, or secret file. The Wyrwood agent on the host publishes two sockets in `/run/wyrwood/containers/devcontainer-<workspace>` (the directory is named after the container), bind-mounted at `/run/wyrwood`:
 
 - `vault.sock`: the OpenBao API (`VAULT_ADDR`/`BAO_ADDR`). The agent adds the container's own token, scoped by the Wyrwood policy bound to the container.
 - `ssh-agent.sock`: an ssh-agent (`SSH_AUTH_SOCK`) whose keys are OpenBao Transit keys named in the policy.
 
-Before the first start, the container must be bound to a policy in the Wyrwood UI. `start` creates a stopped placeholder with the devcontainer's name and labels, waits while you bind it, then removes it; the binding is keyed on the devcontainer labels and carries over. Docker refuses to start the container while the directory is missing.
+Docker refuses to create the container while that directory is missing, and the agent creates it only when the container is bound. For the first start:
+
+1. On the host, create the directory owned by the agent's user: `sudo install -d -o wyrwood -g wyrwood -m 0700 /run/wyrwood/containers/devcontainer-<workspace>`. The agent applies the access group when it opens it.
+2. `dcb up --skip-post-create` creates and starts the container without running its lifecycle commands, which need the sockets.
+3. Bind `devcontainer-<workspace>` to its policies in the Wyrwood UI. The sockets appear in the directory.
+4. `dcb run-user-commands` runs the lifecycle commands.
+
+Later rebuilds keep the name, so the binding and directory carry over.
 
 The policy's contract uses mount target `/run/wyrwood` and access group `1000` (the `vscode` user). On the host, the `wyrwood` user must be in the group with GID 1000.
 
