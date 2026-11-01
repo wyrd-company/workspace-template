@@ -1,0 +1,9 @@
+ansible_repo: {{ansible_repo}}
+dotfiles_repo: {{dotfiles_repo}}
+name: {{name}}
+nats_url: {{nats_url}}
+org: {{org}}
+otlp_endpoint: {{otlp_endpoint}}
+workspace: {{workspace}}
+xolotl_key: {{xolotl_key}}
+xolotl_url: {{xolotl_url}}

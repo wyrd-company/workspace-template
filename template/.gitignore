@@ -1,0 +1,6 @@
+# Clones and worktrees created inside the container; each is its own repository.
+/repos/*.git/
+/tasks/
+/workflows/local/
+/workflows/main/
+/workflows/worktrees/

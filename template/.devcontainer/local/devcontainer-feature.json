@@ -1,0 +1,19 @@
+{
+  "id": "{{workspace}}-local",
+  "version": "1.0.0",
+  "name": "{{name}}",
+  "documentationURL": "https://github.com/wyrd-company/workspace-template",
+  "description": "Installs necessary local features",
+  "options": {},
+  "installsAfter": [
+    "ghcr.io/wyrd-company/devcontainers/ansible",
+    "ghcr.io/rails/devcontainer/features/bun",
+    "ghcr.io/wyrd-company/devcontainers/docker-in-docker",
+    "ghcr.io/devcontainers/features/dotnet",
+    "ghcr.io/wyrd-company/devcontainers/go",
+    "ghcr.io/meaningful-ooo/devcontainer-features/homebrew",
+    "ghcr.io/devcontainers/features/node",
+    "ghcr.io/devcontainers/features/python",
+    "ghcr.io/devcontainers/features/rust"
+  ]
+}

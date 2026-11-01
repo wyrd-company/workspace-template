@@ -1,0 +1,263 @@
+{
+    "name": "{{ name | upper }}",
+    "image": "ghcr.io/wyrd-company/devcontainers/base:resolute",
+
+    "features": {
+        "ghcr.io/wyrd-company/devcontainers/ansible:1": {
+            "source": "{{ansible_repo}}",
+            "playbook": "container.yml",
+            "ref": "main",
+            "sudoUser": "vscode" // trowel's ansible relay runs `sudo ansible-sync`
+        },
+        {%- if 'bun' in sdks %}
+        "ghcr.io/rails/devcontainer/features/bun": {},
+        {%- endif %}
+        "ghcr.io/wyrd-company/devcontainers/caddy:1": {},
+        "ghcr.io/devcontainer-community/devcontainer-features/chezmoi.io:1": {},
+        "ghcr.io/wyrd-company/devcontainers/claude-code-cli:latest": {}, // Anthropic models through Xolotl
+        "ghcr.io/wyrd-company/devcontainers/codex-cli:latest": {}, // every other model through Xolotl
+        "ghcr.io/wyrd-company/devcontainers/dagu:latest": {
+            "host": "0.0.0.0" // reachable by the main server's caddy (see runArgs)
+        },
+        {%- if docker == 'docker-in-docker' %}
+        "ghcr.io/wyrd-company/devcontainers/docker-in-docker:latest": {},
+        {%- elif docker == 'docker-outside-of-docker' %}
+        "ghcr.io/wyrd-company/devcontainers/docker-outside-of-docker:latest": {},
+        {%- endif %}
+        {%- if 'dotnet' in sdks %}
+        "ghcr.io/devcontainers/features/dotnet:2": {},
+        {%- endif %}
+        "ghcr.io/meaningful-ooo/devcontainer-features/fish:2": {},
+        {%- if 'flutter' in sdks %}
+        "ghcr.io/wyrd-company/the-wyrding-way-design-system/flutter:latest": {},
+        {%- endif %}
+        {%- if 'go' in sdks %}
+        "ghcr.io/wyrd-company/devcontainers/go:latest": {},
+        {%- endif %}
+        "ghcr.io/meaningful-ooo/devcontainer-features/homebrew:2": {},
+        "./local": {}, // workspace-local feature: runs scripts.d/* at image build
+        "ghcr.io/devcontainers/features/node:2": {},
+        "ghcr.io/wyrd-company/devcontainers/opentelemetry-collector:latest": {
+            "distribution": "contrib"
+        },
+        "ghcr.io/wyrd-company/devcontainers/pi-coding-agent-cli:1": {},
+        {%- if 'python' in sdks %}
+        "ghcr.io/devcontainers/features/python:1": {},
+        {%- endif %}
+        {%- if 'rust' in sdks %}
+        "ghcr.io/devcontainers/features/rust:1": {},
+        {%- endif %}
+        "ghcr.io/wyrd-company/devcontainers/sshd:latest": {},
+        "ghcr.io/wyrd-company/devcontainers/t3code-server:latest": {},
+        "ghcr.io/wyrd-company/trowel/trowel:0": {
+            "natsUrl": "{{ nats_url }}"
+        }
+    },
+
+    "workspaceMount": "source=${localWorkspaceFolder}/workspace,target=/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace",
+
+    "mounts": [
+        // CA Certs============================================================
+        {
+            "source": "/workspaces/.shared/ca-certificates",
+            "target": "/usr/local/share/ca-certificates,ro",
+            "type": "bind"
+        },
+        // Caches =============================================================
+        {"source":"/workspaces/.shared/caches/linuxbrew","target":"/home/linuxbrew/.linuxbrew","type":"bind"},
+        {"source":"/workspaces/.shared/caches/npm/global","target":"/home/vscode/.npm-global","type":"bind"},
+        {"source":"/workspaces/.shared/caches/npm/local","target":"/home/vscode/.npm","type":"bind"},
+        {"source":"/workspaces/.shared/caches/pnpm","target":"/home/vscode/.local/share/pnpm/store","type":"bind"},
+        {"source":"/workspaces/.shared/caches/uv/packages","target":"/home/vscode/.cache/uv","type":"bind"},
+        {"source":"/workspaces/.shared/caches/uv/tools","target":"/home/vscode/.local/share/uv/tools","type":"bind"},
+        {"source":"/workspaces/.shared/caches/gh/extensions","target":"/home/vscode/.local/share/gh/extensions","type":"bind"},
+        {"source":"/workspaces/.shared/caches/browsers","target":"/home/vscode/.agent-browser/browsers","type":"bind"},
+        {%- if 'go' in sdks %}
+        {"source":"/workspaces/.shared/caches/go-pkg","target":"/go/pkg","type":"bind"},
+        {%- endif %}
+        {%- if 'rust' in sdks %}
+        {"source":"/workspaces/.shared/caches/cargo","target":"/usr/local/cargo","type":"bind"},
+        {%- endif %}
+        // Claude =============================================================
+        {
+            "source": "${localWorkspaceFolder}/state/claude",
+            "target": "/home/vscode/.claude",
+            "type": "bind"
+        },
+        // Codex ==============================================================
+        {
+            "source": "${localWorkspaceFolder}/state/codex",
+            "target": "/home/vscode/.codex",
+            "type": "bind"
+        },
+        // DAGU ===============================================================
+        {   // Local state
+            "source": "${localWorkspaceFolder}/state/workflows",
+            "target": "/home/vscode/.local/share/dagu",
+            "type": "bind"
+        },
+        {
+            "source": "${localWorkspaceFolder}/workflows",
+            "target": "/workflows",
+            "type": "bind"
+        },
+        // Devcontainer =======================================================
+        {
+            "source": "${localWorkspaceFolder}/.devcontainer",
+            "target": "/etc/devcontainer,ro",
+            "type": "bind"
+        },
+        {
+            "source": "${localWorkspaceFolder}/.devcontainer/local/scripts.d",
+            "target": "/etc/devcontainer/local/scripts.d",
+            "type": "bind"
+        },
+        {%- if docker == 'docker-outside-of-docker' %}
+        // Docker =============================================================
+        {   // Host mirror for this workspace's compose projects, at the same path so the host daemon
+            // resolves their bind mounts
+            "source": "/opt/docker/{{ workspace }}",
+            "target": "/opt/docker/{{ workspace }}",
+            "type": "bind"
+        },
+        {%- endif %}
+        // Mnemonic ===========================================================
+        {   // mnemonic user vault (host clone of mnemonic-vault#main, shared by every workspace on the host)
+            "source": "/workspaces/.shared/mnemonic-vault",
+            "target": "/home/vscode/mnemonic-vault",
+            "type": "bind"
+        },
+        // Pi coding agent ====================================================
+        {
+            "source": "${localWorkspaceFolder}/state/pi",
+            "target": "/home/vscode/.pi",
+            "type": "bind"
+        },
+        // Repos ==============================================================
+        {
+            "source": "${localWorkspaceFolder}/repos",
+            "target": "/repos",
+            "type": "bind"
+        },
+        // T3Code =============================================================
+        {   // T3Code server userdata
+            "source": "${localWorkspaceFolder}/state/t3",
+            "target": "/home/vscode/.t3/userdata",
+            "type": "bind"
+        },
+        // Tasks ==============================================================
+        {   // Worktree of this workspace's tasks branch (workspace-ansible)
+            "source": "${localWorkspaceFolder}/tasks",
+            "target": "/tasks",
+            "type": "bind"
+        },
+        // Workspace ==========================================================
+        {   // Project folders
+            "source": "${localWorkspaceFolder}/workspace",
+            "target": "/workspace",
+            "type": "bind"
+        },
+        // Workspace Config ===================================================
+        {
+            "source": "${localWorkspaceFolder}/config.yml",
+            "target": "/etc/workspace/config.yml,ro",
+            "type": "bind"
+        },
+        // Wyrwood ============================================================
+        {
+            "source": "/run/wyrwood/containers/{{ workspace }}",
+            "target": "/run/wyrwood",
+            "type": "bind"
+        }
+    ],
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                {%- if uses_docker %}
+                // Docker and containers
+                "ms-azuretools.vscode-docker",
+                {%- endif %}
+                {%- if 'go' in sdks %}
+                // Go
+                "golang.Go",
+                {%- endif %}
+                {%- if 'node' in sdks or 'bun' in sdks %}
+                // Typescript
+                "ms-vscode.vscode-typescript-next",
+                {%- endif %}
+
+                // Productivity
+                "Gruntfuggly.todo-tree",              // Shows local TODO
+                "bierner.github-markdown-preview",    // GitHub styled markdown
+                "redhat.vscode-yaml",                 // YAML support
+                "MermaidChart.vscode-mermaid-chart",  // Mermaid chart rendering
+
+                // Tooling
+                "task.vscode-task"
+            ],
+            "settings": {
+                "window.title": "{{ name | upper }}",
+                "terminal.integrated.defaultProfile.linux": "fish",
+                "markdown.preview.theme": "github",
+                "explorer.fileNesting.enabled": true,
+                "explorer.fileNesting.patterns": {
+                    "*": "${basename}.*.${extname}, ${basename}.*.${extname}.j2, ${basename}.*.${extname}.jinja"
+                },
+                "git.ignoredRepositories": [
+                    "/archive",
+                    "/references"
+                ],
+                "rumdl.server.path": "/home/linuxbrew/.linuxbrew/bin/rumdl",
+                "ryl.path": "/home/vscode/.local/bin/ryl",
+                "[yaml]": {
+                    "editor.defaultFormatter": "owenlamont.ryl",
+                    "editor.formatOnSave": true,
+                    "editor.codeActionsOnSave": {
+                    "source.fixAll.ryl": "explicit"
+                    }
+                },
+                "todo-tree.ripgrep.ripgrep": "/home/linuxbrew/.linuxbrew/bin/rg"
+            }
+        }
+    },
+
+    // No secrets here. Secrets come from OpenBao through the Wyrwood sockets.
+    "containerEnv": {
+        "BAO_ADDR": "unix:///run/wyrwood/vault.sock",
+        "DEVCONTAINER_ID": "${devcontainerId}",
+        "HOST_HOSTNAME": "${localEnv:HOST_HOSTNAME}",
+        "NODE_EXTRA_CA_CERTS": "/usr/local/share/ca-certificates/homelab-root.crt",
+        "NPM_CONFIG_PREFIX": "/home/vscode/.npm-global",
+        "ORG": "{{ org }}",
+        "PNPM_HOME": "/home/vscode/.npm-global/bin",
+        "SSH_AUTH_SOCK": "/run/wyrwood/ssh-agent.sock",
+        "VAULT_ADDR": "unix:///run/wyrwood/vault.sock",
+        "WORKSPACE": "{{ workspace }}",
+        "WORKSPACE_HOME": "${localWorkspaceFolder}", // where the workspace lives on the host disk
+        "WORKSPACE_NAME": "{{ name }}"
+    },
+
+    "postStartCommand": "sudo update-ca-certificates >/dev/null",
+
+    "shutdownAction": "none",
+    "overrideCommand": false,
+
+    "runArgs": [
+        "--network=homelab",
+        "-l", "devcontainer.id=${devcontainerId}",
+        "-h", "{{ workspace }}.{{ domain_name }}",
+        "--name", "devcontainer-{{ workspace }}",
+        "-l", "caddy_0=t3.{{ workspace }}.{{domain_name}}",
+        "-l", "caddy_0.import=openbao_tls",
+        "-l", "caddy_0.reverse_proxy={{'{{upstreams 3773}}'}}",
+        "-l", "caddy_1=workflows.{{ workspace }}.{{domain_name}}",
+        "-l", "caddy_1.import=openbao_tls",
+        "-l", "caddy_1.reverse_proxy={{'{{upstreams 8080}}'}}",
+        "-l", "caddy_2=*.{{ workspace }}.{{domain_name}}",
+        "-l", "caddy_2.import=openbao_tls",
+        "-l", "caddy_2.reverse_proxy={{'{{upstreams 80}}'}}",
+        "-l", "caddy_2.tls.on_demand"
+    ]
+}

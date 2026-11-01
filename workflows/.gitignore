@@ -1,0 +1,5 @@
+# Ignore Workflows
+/*/
+
+# Do not ignore the .gitignore file itself
+!.gitignore

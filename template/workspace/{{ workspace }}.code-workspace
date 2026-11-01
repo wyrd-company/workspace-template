@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{ "name": "workspace",      "path": "/workspace" },
+		{ "name": "Workflows",      "path": "/workflows" },
+		{ "name": "Devcontainer",   "path": "/etc/devcontainer" }
+	],
+	"settings": {
+		"window.title": "{{ name }}"
+	}
+}

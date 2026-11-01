@@ -1,0 +1,100 @@
+name: workspace
+description: A devcontainer workspace with agent, workflow, and memory folders
+
+data:
+  default_org: wyrd-company
+  default_domain: wyrd.internal
+  default_nats_url: nats.wyrd.internal
+  default_open_observe_url: openobserve.internal:5081
+
+interview:
+  - id: org
+    type: text
+    prompt: Workspaces GitHub account
+    description: The GitHub account holding the workspace repositories
+    default: "{{ default_org }}"
+    required: true
+
+  - id: workspace
+    computed: "toha_target_name"
+
+  - id: name
+    type: text
+    prompt: Workspace name
+    default: "{{ workspace | title }}"
+    required: true
+
+  - id: domain_name
+    type: text
+    prompt: Host domain name
+    description: The hostname to use for the workspace
+    default: "{{ workspace }}.{{ default_domain }}"
+    required: true
+
+  - id: xolotl_url
+    type: text
+    prompt: Xolotl gateway URL
+    description: Claude Code and Codex reach their models through this gateway.
+    default: https://xolotl.internal
+    required: true
+
+  - id: xolotl_key
+    type: text
+    prompt: Xolotl client key path
+    description: The path of the client key assigned to the container
+    default: "devcontainer/{{ workspace }}"
+    required: true
+
+  - id: sdks
+    type: multiselect
+    prompt: SDKs
+    description: Which SDKs to install. Node will always be added.
+    options: [ bun, dotnet, flutter, go, node, python, rust ]
+    default: [ node ]
+
+  - id: docker
+    type: select
+    prompt: Docker support
+    description: Installs a devcontainer feature for Docker
+    options: [ none, docker-in-docker, docker-outside-of-docker ]
+    default: none
+
+  - id: uses_docker
+    computed: "docker != 'none'"
+
+  - id: enable_gpu
+    type: confirm
+    prompt: Do you need GPU support?
+    default: false
+
+  - id: nats_url
+    type: text
+    prompt: NATS URL
+    description: Url to the NATS.io server
+    default: "{{ default_nats_url }}"
+    required: true
+
+  - id: otlp_endpoint
+    type: text
+    prompt: OpenTelemetry reciever URL
+    description: The URL to the OpenTelemetry reciever (OpenObserve)
+    default: "{{ default_open_observe_url }}"
+    required: true
+
+  - id: ansible_repo
+    computed: "'git@github.com:' ~ org ~ '/workspace-ansible.git'"
+
+  - id: dotfiles_repo
+    computed: "'https://github.com/' ~ org ~ '/workspace-dotfiles.git'"
+
+# Bind-mount sources with no template files; /tasks must stay empty for `git worktree add`
+directories:
+  - path: repos
+  - path: tasks
+  - path: workflows
+
+messages:
+  before-apply: |
+    Creating workspace {{ name }} ({{ workspace }})...
+  after-apply: |
+    Workspace {{ name }} is ready.
