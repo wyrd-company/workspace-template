@@ -2,6 +2,15 @@
 # Workspace-local feature: runs every executable in scripts.d/ (sorted) at image build.
 set -euo pipefail
 
+log() {
+    echo "[local] $*"
+}
+
+err() {
+    echo "[local] ERROR: $*" >&2
+    exit 1
+}
+
 resolve_latest_openbao_version() {
     local releases_json version page=1
     local -a curl_args=(
@@ -51,12 +60,19 @@ resolve_latest_openbao_version() {
 download_openbao() {
     local download_dir version archive_name release_url archive checksums_file expected_checksum extract_dir
     download_dir="$(mktemp -d)"
-    trap 'rm -rf "${download_dir}"' EXIT
+    # Expanded now: the local is gone when the EXIT trap runs
+    trap "rm -rf '${download_dir}'" EXIT
     version="$(resolve_latest_openbao_version)"
     archive_name="openbao_${version}_linux_${architecture}.tar.gz"
     release_url="https://github.com/openbao/openbao/releases/download/v${version}"
     archive="${download_dir}/${archive_name}"
     checksums_file="${download_dir}/checksums.txt"
+
+    log "Downloading OpenBao ${version} for Linux ${architecture}."
+    curl --fail --location --silent --show-error --retry 5 --retry-all-errors \
+        --output "${checksums_file}" "${release_url}/checksums.txt"
+    curl --fail --location --silent --show-error --retry 5 --retry-all-errors \
+        --output "${archive}" "${release_url}/${archive_name}"
 
     expected_checksum="$(awk -v archive="${archive_name}" '$2 == archive { print $1 }' "${checksums_file}")"
     [[ "${expected_checksum}" =~ ^[0-9a-fA-F]{64}$ ]] \
