@@ -19,8 +19,8 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 /repos/                            # bare clones: memory.git, tasks.git, workflows.git
 /tasks/                            # workspace tasks: orphan branch workspace/{workspace} of tasks
 /workflows/main/                   # shared sub-dags and bin/ scripts: main of workflows (read only, PRs from worktrees/)
-/workflows/local/                  # workspace workflows: orphan branch {workspace} of workflows
-/workflows/worktrees/              # branches for changes: main/ for PRs to main, local/ for {workspace}
+/workflows/local/                  # workspace workflows: orphan branch workspace/{workspace} of workflows
+/workflows/worktrees/              # branches for changes: main/ for PRs to main, local/ for workspace/{workspace}
 /workspace/                        # workspaceFolder: AGENTS.md, {workspace}.code-workspace
 /run/wyrwood/                      # vault.sock and ssh-agent.sock from the host's Wyrwood agent
 /opt/docker/{workspace}/           # docker-outside-of-docker only: host mirror of compose projects

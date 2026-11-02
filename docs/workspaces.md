@@ -14,9 +14,9 @@ This is what I call the combination of a local file tree + devcontainer that ser
 │   └── workflows/                 # ~/.local/share/dagu (Dagu state)
 ├── tasks/                         # /tasks: worktree of branch workspace/{workspace} of tasks
 ├── workflows/                     # /workflows
-│   ├── local/                     # worktree of branch {workspace}
+│   ├── local/                     # worktree of branch workspace/{workspace}
 │   ├── main/                      # worktree of main
-│   └── worktrees/                 # branches for changes: main/ for PRs to main, local/ for {workspace}
+│   └── worktrees/                 # branches for changes: main/ for PRs to main, local/ for workspace/{workspace}
 └── workspace/                     # /workspace (workspaceFolder)
     ├── AGENTS.md                  # workspace instructions
     └── {workspace}.code-workspace
