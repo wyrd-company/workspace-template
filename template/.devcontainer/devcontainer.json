@@ -65,7 +65,7 @@
             "type": "bind"
         },
         // Caches =============================================================
-        {"source":"/workspaces/.shared/caches/linuxbrew","target":"/home/linuxbrew/.linuxbrew","type":"bind"},
+        {"source":"/workspaces/.shared/caches/homebrew","target":"/home/vscode/.cache/Homebrew","type":"bind"}, // downloads only; Homebrew itself stays in the image
         {"source":"/workspaces/.shared/caches/npm/global","target":"/home/vscode/.npm-global","type":"bind"},
         {"source":"/workspaces/.shared/caches/npm/local","target":"/home/vscode/.npm","type":"bind"},
         {"source":"/workspaces/.shared/caches/pnpm","target":"/home/vscode/.local/share/pnpm/store","type":"bind"},
