@@ -233,8 +233,6 @@
         "WORKSPACE_NAME": "{{ name }}"
     },
 
-    "postStartCommand": "sudo update-ca-certificates >/dev/null",
-
     "shutdownAction": "none",
     "overrideCommand": false,
 

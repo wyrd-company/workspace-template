@@ -82,7 +82,7 @@ interview:
     required: true
 
   - id: ansible_repo
-    computed: "'git@github.com:' ~ org ~ '/workspace-ansible.git'"
+    computed: "'https://github.com/' ~ org ~ '/workspace-ansible.git'"
 
   - id: dotfiles_repo
     computed: "'https://github.com/' ~ org ~ '/workspace-dotfiles.git'"

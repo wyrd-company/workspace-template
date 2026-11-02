@@ -79,8 +79,17 @@ Docker refuses to create the container while that directory is missing, and the 
 
 1. On the host, create the directory owned by the agent's user: `sudo install -d -o wyrwood -g wyrwood -m 0700 /run/wyrwood/containers/devcontainer-<workspace>`. The agent applies the access group when it opens it.
 2. `dcb up --skip-post-create` creates and starts the container without running its lifecycle commands, which need the sockets.
-3. Bind `devcontainer-<workspace>` to its policies in the Wyrwood UI. The sockets appear in the directory.
-4. `dcb run-user-commands` runs the lifecycle commands.
+3. `docker stop devcontainer-<workspace>`.
+4. Bind `devcontainer-<workspace>` to its policies in the Wyrwood UI. The sockets appear in the directory.
+5. `docker start devcontainer-<workspace>`.
+6. `dcb run-user-commands` runs the lifecycle commands.
+
+Steps 3 and 5 are a workaround. `dcb up` always starts the container, and the image's s6 startup services, such as
+the Ansible feature's playbook run, start with it whatever `--skip-post-create` says. So the first start runs them
+before the container is bound and they find no sockets; the start in step 5 runs them again with the sockets. Once
+dcb can create a container without starting it
+([devcontainer-builder#80](https://github.com/wyrd-company/devcontainer-builder/issues/80)), steps 2, 3 and 5 become
+one create.
 
 Later rebuilds keep the name, so the binding and directory carry over.
 
