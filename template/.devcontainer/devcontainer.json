@@ -238,6 +238,7 @@
 
     "runArgs": [
         "--network=homelab",
+        "--restart", "unless-stopped", // back up after a host reboot
         "-l", "devcontainer.id=${devcontainerId}",
         "-h", "{{ domain_name }}",
         "--name", "devcontainer-{{ workspace }}",
