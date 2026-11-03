@@ -4,6 +4,7 @@ import json
 import os
 import socketserver
 import sys
+import time
 from http.server import BaseHTTPRequestHandler
 
 SOCKET, MODE_FILE, LOG_FILE, CANARY = sys.argv[1:5]
@@ -16,6 +17,8 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         with open(LOG_FILE, "a", encoding="utf-8") as log:
             log.write(path + "\n")
+        if mode == "stall":
+            time.sleep(600)
         status, body = 404, {"errors": []}
         if path == "/v1/auth/token/lookup-self":
             if mode == "no-token":
