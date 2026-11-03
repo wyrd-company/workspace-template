@@ -116,10 +116,9 @@
         },
         {%- if docker == 'docker-outside-of-docker' %}
         // Docker =============================================================
-        {   // Host mirror for this workspace's compose projects, at the same path so the host daemon
-            // resolves their bind mounts
-            "source": "/opt/docker/{{ workspace }}",
-            "target": "/opt/docker/{{ workspace }}",
+        {   // This workspace's compose projects, at the same path so the host daemon resolves their bind mounts
+            "source": "${localWorkspaceFolder}/docker",
+            "target": "${localWorkspaceFolder}/docker",
             "type": "bind"
         },
         {%- endif %}
