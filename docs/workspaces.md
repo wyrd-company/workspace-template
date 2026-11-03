@@ -5,6 +5,7 @@ This is what I call the combination of a local file tree + devcontainer that ser
 ```tree
 ├── .devcontainer/                 # /etc/devcontainer (r/o; local/scripts.d writable)
 ├── config.yml                     # /etc/workspace/config.yml (r/o), the template answers
+├── docker/                        # $WORKSPACE_HOME/docker: compose projects, docker-outside-of-docker only
 ├── repos/                         # /repos: bare clones memory.git, tasks.git, workflows.git
 ├── state/
 │   ├── claude/                    # ~/.claude
@@ -32,10 +33,11 @@ Menagerie commits and pushes the workspace's Git repository. The `.gitignore` fi
 | `state/*/.gitignore` | Yes, only these five files under `state/` |
 | Anything else under `state/` | No |
 | `repos/`, `tasks/`, `workflows/` | No. Their contents are Git repositories with their own remotes |
+| `docker/` | No |
 | Files directly in `workspace/` | Yes. They are user files |
 | Folders in `workspace/` | No. They are clones |
 
-A backup does not restore agent credentials, history or databases. `repos`, `tasks` and `workflows` are not in Git, and they hold no placeholder file, so that `tasks` stays empty for `git worktree add`. Toha creates them when it applies the template, and Menagerie creates them when they are missing from a clone.
+A backup does not restore agent credentials, history or databases. `repos`, `tasks`, `workflows` and `docker` are not in Git, and they hold no placeholder file, so that `tasks` stays empty for `git worktree add`. Toha creates them when it applies the template, and Menagerie creates them when they are missing from a clone.
 
 ## `state`
 

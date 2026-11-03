@@ -92,6 +92,8 @@ directories:
   - path: repos
   - path: tasks
   - path: workflows
+  - path: docker
+    when: "docker == 'docker-outside-of-docker'"
 
 messages:
   before-apply: |

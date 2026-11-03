@@ -23,7 +23,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 /workflows/worktrees/              # branches for changes: main/ for PRs to main, local/ for workspace/{workspace}
 /workspace/                        # workspaceFolder: AGENTS.md, {workspace}.code-workspace
 /run/wyrwood/                      # vault.sock and ssh-agent.sock from the host's Wyrwood agent
-/opt/docker/{workspace}/           # docker-outside-of-docker only: host mirror of compose projects
+$WORKSPACE_HOME/docker/            # docker-outside-of-docker only: compose projects, at their host path
 ```
 
 The bare clones and worktrees are created inside the container by workspace-ansible's `container.yml`, which
@@ -58,7 +58,7 @@ Examples of uses includes:
 
 ## Docker
 
-Devcontainers can, optionally, run [Docker](https://www.docker.com) server under S6-overlay, either as [Docker-in-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-in-docker) or [Docker-out-of-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-outside-of-docker). Docker-in-Docker is the normal case: its bind mounts resolve inside the devcontainer, so no host path is mirrored. Docker-outside-of-Docker is a special case for containers that help manage the host's Docker; it bind mounts the host's compose projects, `/opt/docker`, at the same path so the host daemon resolves their bind mounts.
+Devcontainers can, optionally, run [Docker](https://www.docker.com) server under S6-overlay, either as [Docker-in-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-in-docker) or [Docker-out-of-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-outside-of-docker). Docker-in-Docker is the normal case: its bind mounts resolve inside the devcontainer, so no host path is mirrored. Docker-outside-of-Docker is a special case for containers that help manage the host's Docker; it bind mounts the workspace's `docker/` folder at its host path, `$WORKSPACE_HOME/docker`, so the host daemon resolves the bind mounts of compose projects kept there. Toha and Menagerie create the folder, and a backup ignores it.
 
 ## Skills
 
