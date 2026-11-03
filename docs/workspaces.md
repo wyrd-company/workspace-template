@@ -22,9 +22,24 @@ This is what I call the combination of a local file tree + devcontainer that ser
     └── {workspace}.code-workspace
 ```
 
+## Backups
+
+Menagerie commits and pushes the workspace's Git repository. The `.gitignore` files decide what that holds:
+
+| Path | In a backup |
+| --- | --- |
+| `.devcontainer/`, `config.yml`, `.toha.json`, `.gitignore` | Yes |
+| `state/*/.gitignore` | Yes, only these five files under `state/` |
+| Anything else under `state/` | No |
+| `repos/`, `tasks/`, `workflows/` | No. Their contents are Git repositories with their own remotes |
+| Files directly in `workspace/` | Yes. They are user files |
+| Folders in `workspace/` | No. They are clones |
+
+A backup does not restore agent credentials, history or databases. `repos`, `tasks` and `workflows` are not in Git, and they hold no placeholder file, so that `tasks` stays empty for `git worktree add`. Toha creates them when it applies the template, and Menagerie creates them when they are missing from a clone.
+
 ## `state`
 
-This stores agent-specific state.
+This stores agent-specific state. Git ignores all of it except each folder's `.gitignore`.
 
 - `claude` is where the local claude profile is stored
 - `codex` is where the local codex profile is stored

@@ -1,5 +1,3 @@
-# Ignore Dagu State
-/*/
-
-# Do not ignore the .gitignore file itself
+# Dagu state: never in a backup
+/*
 !.gitignore
