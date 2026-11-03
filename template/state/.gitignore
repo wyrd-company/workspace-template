@@ -1,0 +1,11 @@
+# Agent and service state. Each folder's own .gitignore keeps its contents out;
+# anything else here is ignored, so a new folder stays out too. This rule is here
+# and not in the root .gitignore, so that Menagerie's go-git matcher skips the
+# folder and does not read a .gitignore inside it.
+/*
+!/.gitignore
+!/claude/
+!/codex/
+!/pi/
+!/t3/
+!/workflows/
