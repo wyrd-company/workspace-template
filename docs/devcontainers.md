@@ -122,21 +122,17 @@ Menagerie reads the container name from `runArgs`, issues the key, makes the bin
 
 ### Workspace names
 
-A workspace name holds lowercase letters, digits, `_` and `-`, starts with a letter or digit, and has at most 63 characters, so that it can name a Xolotl key and be a Wyrwood policy value. Any other name stops the interview before a file is written, with this error:
-
-```text
-template error in xolotl_key_name.default `{{ workspace }}`: default "Bad.Name" is not allowed: must match ^[a-z0-9][a-z0-9_-]{0,62}$
-```
+A workspace name holds lowercase letters, digits, `_` and `-`, starts with a letter or digit, and has at most 63 characters, so that it can name a Xolotl key and be a Wyrwood policy value. Any other name stops the interview before a file is written, with a template error on `xolotl_key_name` that quotes the rule. Toha has no way to raise a message of a template's own, so the error ends in `invalid float literal`. No answer or configured default can replace the name.
 
 ### Start check
 
 `postStartCommand` runs `.devcontainer/check-provisioning.sh` at every start that `dcb` makes, as the remote user. A failure fails `dcb up`, and so the Menagerie job that called it. In order, it:
 
 1. Waits for the startup services to end, with a limit of 30 minutes (`PROVISIONING_WAIT_SECONDS`). `s6-rc -a list` refuses to list while the startup change runs. After it, the `ansible-setup` service is active only if the playbook succeeded. If it is not, the check fails, and the playbook's output is in the container's log.
-2. Asks `vault.sock` for its token (`bao token lookup`) and reads the Xolotl key (`bao kv get`), as Claude Code and Codex do. A key that was not issued fails here.
+2. Asks `vault.sock` for its token (`bao token lookup`) and reads the Xolotl key (`bao kv get`), as Claude Code and Codex do. A key that was not issued fails here. It ignores any `BAO_AGENT_ADDR` and `VAULT_AGENT_ADDR`, so that these reads go to the declared socket.
 3. Asks `ssh-agent.sock` for its keys and signs with the first.
 
-It reports each broken socket, and discards the output of each check, so no token, key or server text reaches a log. A start by the Docker restart policy, such as after a host reboot, does not run it.
+Each socket operation has a limit of 30 seconds (`PROVISIONING_SOCKET_SECONDS`). It reports each broken socket, and discards the output of each check, so no token, key or server text reaches a log. A start by the Docker restart policy, such as after a host reboot, does not run it.
 
 ## Host prerequisites
 

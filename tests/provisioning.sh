@@ -81,10 +81,10 @@ test_render_matches_schema() {
 
 test_render_refuses_workspace_name() {
     local name output
-    for name in Upper.Case has.dot UPPER -leading "$(printf 'a%.0s' {1..64})"; do
+    for name in Upper.Case has.dot UPPER -leading _leading 'has space' "$(printf 'a%.0s' {1..64})"; do
         output="$(render "./${name}" '{"xolotl_key_policy":"host-sample"}')"
         if [ "$(jq -r .kind <<<"${output}")" = render ] && [ ! -e "${scratch}/targets/${name}" ] \
-            && grep -q 'xolotl_key_name.default' <<<"${output}"; then
+            && grep -q 'workspace_name_must_be_lowercase' <<<"${output}"; then
             pass "render_refuses_workspace_name ${name:0:20}"
         else
             miss "render_refuses_workspace_name ${name:0:20}" "${output}"
@@ -120,6 +120,20 @@ test_render_key_policy() {
     else
         miss "render_takes_key_policy_from_template_defaults" "no host-configured key"
     fi
+    printf 'template-defaults:\n  "%s":\n    xolotl_key_name: other\n    xolotl_key_policy: host-configured\n' "${repo}" \
+        >"${XDG_CONFIG_HOME}/toha/config.yml"
+    render fixed-name '{}' >/dev/null
+    if grep -qx 'xolotl_key: host-configured/fixed-name' "${scratch}/targets/fixed-name/config.yml" 2>/dev/null; then
+        pass "render_key_name_ignores_configured_default"
+    else
+        miss "render_key_name_ignores_configured_default" "the name is not the workspace name"
+    fi
+    output="$(render Bad.Configured '{}')"
+    if [ ! -e "${scratch}/targets/Bad.Configured" ]; then
+        pass "render_configured_default_does_not_admit_bad_name"
+    else
+        miss "render_configured_default_does_not_admit_bad_name" "${output}"
+    fi
     rm -f "${XDG_CONFIG_HOME}/toha/config.yml"
 }
 
@@ -134,6 +148,7 @@ mkdir -p "${sockets}" "${stubs}"
 # "busy" fails as the real one does while the startup change holds its lock.
 cat >"${stubs}/s6-rc" <<'STUB'
 #!/usr/bin/env bash
+[ "$*" = '-a list' ] || { echo "s6-rc stub: unexpected arguments: $*" >&2; exit 100; }
 script="${S6_SCRIPT:?}"
 count_file="${script}.count"
 count=$(($(cat "${count_file}" 2>/dev/null || echo 0) + 1))
@@ -174,6 +189,7 @@ run_check() {
     output="$(env PATH="${stubs}:${PATH}" S6_SCRIPT="${scratch}/s6-script" \
         BAO_ADDR="unix://${sockets}/vault.sock" VAULT_ADDR="unix://${sockets}/vault.sock" \
         SSH_AUTH_SOCK="${SSH_SOCKET:-${sockets}/ssh-agent.sock}" PROVISIONING_WAIT_SECONDS="${WAIT:-20}" \
+        PROVISIONING_SOCKET_SECONDS="${SOCKET_WAIT:-30}" ${EXTRA_ENV:-} \
         bash "${check}" host-sample/sample 2>&1)"
     rc=$?
 }
@@ -189,6 +205,11 @@ expect() {
     else
         pass "${name}"
     fi
+}
+
+# A socket with no listener: it exists, and a connection to it fails.
+dead_socket() {
+    python3 -c 'import socket, sys; s = socket.socket(socket.AF_UNIX); s.bind(sys.argv[1]); s.close()' "$1"
 }
 
 active='s6rc-oneshot-runner ansible-setup fix-attrs legacy-cont-init'
@@ -238,6 +259,41 @@ test_check() {
     run_check "${active}"
     expect check_keeps_server_text_out 1 'cannot read Xolotl key'
     echo ok >"${scratch}/vault-mode"
+
+    # A dead declared socket, and a working address that must not stand in for it.
+    python3 "${repo}/tests/fake-vault.py" "${sockets}/other-vault.sock" "${scratch}/vault-mode" "${scratch}/other.log" "${canary}" &
+    other_pid=$!
+    for _ in {1..50}; do
+        [ -S "${sockets}/other-vault.sock" ] && break
+        sleep 0.1
+    done
+    mv "${sockets}/vault.sock" "${sockets}/vault.saved"
+    dead_socket "${sockets}/vault.sock"
+    EXTRA_ENV="BAO_AGENT_ADDR=unix://${sockets}/other-vault.sock VAULT_AGENT_ADDR=unix://${sockets}/other-vault.sock" run_check "${active}"
+    expect check_ignores_alternate_agent_address 1 'no working OpenBao token'
+    kill "${other_pid}" 2>/dev/null
+    rm -f "${sockets}/vault.sock"
+    mv "${sockets}/vault.saved" "${sockets}/vault.sock"
+
+    echo stall >"${scratch}/vault-mode"
+    SOCKET_WAIT=1 run_check "${active}"
+    expect check_bounds_stalled_vault 1 'vault.sock did not answer within 1 seconds'
+    echo ok >"${scratch}/vault-mode"
+
+    python3 -c 'import socket, sys, time; s = socket.socket(socket.AF_UNIX); s.bind(sys.argv[1]); s.listen(); c = [s.accept() for _ in range(9)]; time.sleep(600)' \
+        "${sockets}/stalled.sock" &
+    stalled_pid=$!
+    for _ in {1..50}; do
+        [ -S "${sockets}/stalled.sock" ] && break
+        sleep 0.1
+    done
+    SSH_SOCKET="${sockets}/stalled.sock" SOCKET_WAIT=1 run_check "${active}"
+    expect check_bounds_stalled_agent 1 'stalled.sock did not answer within 1 seconds'
+    kill "${stalled_pid}" 2>/dev/null
+
+    dead_socket "${sockets}/dead.sock"
+    SSH_SOCKET="${sockets}/dead.sock" run_check "${active}"
+    expect check_names_dead_agent_socket 1 'does not answer as an ssh-agent'
 
     SSH_SOCKET="${sockets}/missing.sock" run_check "${active}"
     expect check_fails_without_agent_socket 1 'missing.sock is not a socket'
