@@ -48,10 +48,11 @@
         "ghcr.io/devcontainers/features/rust:1": {},
         {%- endif %}
         "ghcr.io/wyrd-company/devcontainers/sshd:latest": {},
-        "ghcr.io/wyrd-company/devcontainers/t3code-server:latest": {},
-        "ghcr.io/wyrd-company/trowel/trowel:0": {
-            "natsUrl": "{{ nats_url }}"
-        }
+        "ghcr.io/wyrd-company/devcontainers/t3code-server:latest": {}
+        // Off until there is a NATS server to relay from.
+        // "ghcr.io/wyrd-company/trowel/trowel:0": {
+        //     "natsUrl": "{{ nats_url }}"
+        // }
     },
 
     "workspaceMount": "source=${localWorkspaceFolder}/workspace,target=/workspace,type=bind,consistency=cached",
