@@ -8,6 +8,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 
 ```
 /etc/devcontainer/                 # r/o mount of the workspace .devcontainer folder
+│   ├── check-provisioning.sh      # postStartCommand: the playbook ran and the sockets work
 │   └── local/scripts.d/           # the one writable part: scripts the local feature runs at image build
 /etc/workspace/config.yml          # r/o mount of the workspace config.yml (the template answers)
 /etc/claude-code/ /etc/codex/      # harness system settings, rendered by workspace-ansible
@@ -75,29 +76,112 @@ Each container runs [`sshd` via S6-overlay](https://github.com/wyrd-company/devc
 - `vault.sock`: the OpenBao API (`VAULT_ADDR`/`BAO_ADDR`). The agent adds the container's own token, scoped by the Wyrwood policy bound to the container.
 - `ssh-agent.sock`: an ssh-agent (`SSH_AUTH_SOCK`) whose keys are OpenBao Transit keys named in the policy.
 
-Docker refuses to create the container while that directory is missing, and the agent creates it only when the container is bound. For the first start:
+Docker refuses to create the container while that directory is missing, and the agent creates it only when the container is bound. [Menagerie](https://github.com/wyrd-company/menagerie) does this for a workspace it creates: see [Provisioning](#provisioning). A workspace started by hand needs these steps before its first start:
 
 1. On the host, create the directory owned by the agent's user: `sudo install -d -o wyrwood -g wyrwood -m 0700 /run/wyrwood/containers/devcontainer-<workspace>`. The agent applies the access group when it opens it.
 2. `dcb up --skip-post-create` creates and starts the container without running its lifecycle commands, which need the sockets.
 3. `docker stop devcontainer-<workspace>`.
-4. Bind `devcontainer-<workspace>` to its policies in the Wyrwood UI. The sockets appear in the directory.
-5. `docker start devcontainer-<workspace>`.
-6. `dcb run-user-commands` runs the lifecycle commands.
+4. Bind `devcontainer-<workspace>` to its policies in the Wyrwood UI, with the access group, the policies and the values of `customizations.menagerie`. The sockets appear in the directory.
+5. Issue the Xolotl key.
+6. `docker start devcontainer-<workspace>`.
+7. `dcb run-user-commands` runs the lifecycle commands.
 
-Steps 3 and 5 are a workaround. `dcb up` always starts the container, and the image's s6 startup services, such as
+Steps 3 and 6 are a workaround. `dcb up` always starts the container, and the image's s6 startup services, such as
 the Ansible feature's playbook run, start with it whatever `--skip-post-create` says. So the first start runs them
-before the container is bound and they find no sockets; the start in step 5 runs them again with the sockets. Once
+before the container is bound and they find no sockets; the start in step 6 runs them again with the sockets. Once
 dcb can create a container without starting it
-([devcontainer-builder#80](https://github.com/wyrd-company/devcontainer-builder/issues/80)), steps 2, 3 and 5 become
+([devcontainer-builder#80](https://github.com/wyrd-company/devcontainer-builder/issues/80)), steps 2, 3 and 6 become
 one create.
 
 Later rebuilds keep the name, so the binding and directory carry over.
 
-The policy's contract uses mount target `/run/wyrwood` and access group `1000` (the `vscode` user). On the host, the `wyrwood` user must be in the group with GID 1000.
+The policy's contract uses mount target `/run/wyrwood`. The access group is `1000` (the `vscode` user). On the host, the `wyrwood` user must be in the group with GID 1000.
 
 ## Xolotl
 
-Claude Code (Anthropic models) and Codex CLI (every other model) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). Neither holds an API key: `/etc/claude-code/managed-settings.json` (`apiKeyHelper`) and `/etc/codex/requirements.toml` (`auth.command`), rendered by workspace-ansible, run `bao kv get -field=api_key kv/xolotl/keys/<xolotl_key>` through `vault.sock`. `xolotl_key` is the Xolotl `<policy>/<client>` of the key (default `devcontainer/<workspace>`), and `kv/xolotl` is the deployed Xolotl's KV v2 mount and prefix, in the `wyrwood` namespace it shares with Wyrwood. The bound Wyrwood policy must allow `read` on `kv/data/xolotl/keys/<xolotl_key>`.
+Claude Code (Anthropic models) and Codex CLI (every other model) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). Neither holds an API key: `/etc/claude-code/managed-settings.json` (`apiKeyHelper`) and `/etc/codex/requirements.toml` (`auth.command`), rendered by workspace-ansible, run `bao kv get -field=api_key kv/xolotl/keys/<xolotl_key>` through `vault.sock`. `xolotl_key` is the Xolotl `<key policy>/<key name>` of the key. The template computes it from two parts:
+
+- `xolotl_key_policy`, the one question. Its value is the host's key policy, which only this host's workspaces use. It has no template default, because a default cannot name a host. Set it once for each host: see [Per-host key policy](#per-host-key-policy).
+- `xolotl_key_name`, which is the workspace name and is never asked.
+
+`kv/xolotl` is the deployed Xolotl's KV v2 mount and prefix, in the `wyrwood` namespace it shares with Wyrwood.
+
+## Provisioning
+
+The rendered `.devcontainer/devcontainer.json` declares what the workspace needs from Wyrwood and Xolotl, under `customizations.menagerie`, in the form [Menagerie's provisioning declaration](https://github.com/wyrd-company/menagerie/blob/main/docs/specifications/provisioning-declaration.yml) defines. For a workspace called `sample`, on a host whose key policy is `host-sample`:
+
+```jsonc
+"runArgs": ["--name", "devcontainer-sample"],
+"customizations": { "menagerie": {
+  "wyrwood": { "accessGroup": 1000, "policies": ["workspace", "xolotl-client-key"], "values": {"xolotl_key_name": "sample"} },
+  "xolotl": { "keyPolicy": "host-sample", "keyName": "sample" }
+}}
+```
+
+Menagerie reads the container name from `runArgs`, issues the key, makes the binding and creates the container before its first start.
+
+### Workspace names
+
+A workspace name holds lowercase letters, digits, `_` and `-`, starts with a letter or digit, and has at most 63 characters, so that it can name a Xolotl key and be a Wyrwood policy value. Any other name stops the interview before a file is written, with this error:
+
+```text
+template error in xolotl_key_name.default `{{ workspace }}`: default "Bad.Name" is not allowed: must match ^[a-z0-9][a-z0-9_-]{0,62}$
+```
+
+### Start check
+
+`postStartCommand` runs `.devcontainer/check-provisioning.sh` at every start that `dcb` makes, as the remote user. A failure fails `dcb up`, and so the Menagerie job that called it. In order, it:
+
+1. Waits for the startup services to end, with a limit of 30 minutes (`PROVISIONING_WAIT_SECONDS`). `s6-rc -a list` refuses to list while the startup change runs. After it, the `ansible-setup` service is active only if the playbook succeeded. If it is not, the check fails, and the playbook's output is in the container's log.
+2. Asks `vault.sock` for its token (`bao token lookup`) and reads the Xolotl key (`bao kv get`), as Claude Code and Codex do. A key that was not issued fails here.
+3. Asks `ssh-agent.sock` for its keys and signs with the first.
+
+It reports each broken socket, and discards the output of each check, so no token, key or server text reaches a log. A start by the Docker restart policy, such as after a host reboot, does not run it.
+
+## Host prerequisites
+
+A workspace starts only on a host that has these. Menagerie reports the missing folders and networks in one message before it does anything else; it creates nothing outside the workspace folder.
+
+### Shared folders
+
+Folders under `/workspaces/.shared`, owned by the `vscode` user (UID 1000):
+
+| Folder | Holds |
+| --- | --- |
+| `ca-certificates` | The host's root certificates, with `homelab-root.crt` |
+| `caches/homebrew`, `caches/npm/global`, `caches/npm/local`, `caches/pnpm`, `caches/uv/packages`, `caches/uv/tools`, `caches/gh/extensions`, `caches/browsers` | Caches for every workspace |
+| `caches/go-pkg` | Go cache, for a workspace with the `go` SDK |
+| `caches/cargo` | Cargo cache, for a workspace with the `rust` SDK |
+| `mnemonic-vault` | Clone of `mnemonic-vault`, branch `main` |
+
+### `homelab` network
+
+A Docker network called `homelab` that containers can attach to, shared with the main server's Caddy.
+
+### Wyrwood policies
+
+Two policies on the host's Wyrwood controller, each on the allowlist of Menagerie's operator key:
+
+- `workspace` gives the container its mount target, `/run/wyrwood`, its SSH key, and what workspace-ansible and the dotfiles read.
+- `xolotl-client-key` allows `read` on `kv/data/xolotl/keys/<key policy>/<xolotl_key_name>`, and nothing else. The key policy is fixed in the path, and the name comes from the binding's `xolotl_key_name` value, so that each workspace reads only its own key and cannot name a key of another host.
+
+The policy name is fixed in the template and the path names one key policy, so one controller serves one key policy.
+
+### Xolotl key policy
+
+A Xolotl key policy, which only this host's workspaces use. A scoped key for this key policy, with the `keys` scope, lets Menagerie issue the workspaces' keys.
+
+### Per-host key policy
+
+Give the host's key policy as the default answer, in Toha's [`template-defaults`](https://wyrd.foo/docs/toha/configuration), so that no one types it for each workspace:
+
+```yaml
+template-defaults:
+  "gh:wyrd-company/workspace-template":
+    xolotl_key_policy: host-sample
+```
+
+The file is `/var/lib/menagerie/toha/config/config.yml` for Menagerie, and Toha's user configuration, `~/.config/toha/config.yml`, for the `toha` command. The key is the template's formal name, which `toha templates list` shows. Without this default, the interview asks for the key policy, and an answer can replace the default for one workspace.
 
 ## `vscode` user
 
