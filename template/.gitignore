@@ -1,6 +1,13 @@
 # Clones and worktrees created inside the container; each is its own repository.
-/repos/*.git/
+/repos/
 /tasks/
-/workflows/local/
-/workflows/main/
-/workflows/worktrees/
+/workflows/
+
+# Agent and service state. Each folder's own .gitignore keeps its contents out;
+# anything else directly under state/ is ignored, so a new folder stays out too.
+/state/*
+!/state/claude/
+!/state/codex/
+!/state/pi/
+!/state/t3/
+!/state/workflows/
