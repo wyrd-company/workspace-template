@@ -212,6 +212,16 @@ dead_socket() {
     python3 -c 'import socket, sys; s = socket.socket(socket.AF_UNIX); s.bind(sys.argv[1]); s.close()' "$1"
 }
 
+# Fails the check when a bound of 1 second took much longer than that.
+expect_bounded() {
+    local name="$1" text="$2" started="$3"
+    if [ "$((SECONDS - started))" -gt 10 ]; then
+        miss "${name}" "a bound of 1 second took $((SECONDS - started)) seconds"
+    else
+        expect "${name}" 1 "${text}"
+    fi
+}
+
 active='s6rc-oneshot-runner ansible-setup fix-attrs legacy-cont-init'
 down='s6rc-oneshot-runner fix-attrs legacy-cont-init'
 
@@ -276,8 +286,9 @@ test_check() {
     mv "${sockets}/vault.saved" "${sockets}/vault.sock"
 
     echo stall >"${scratch}/vault-mode"
+    started="${SECONDS}"
     SOCKET_WAIT=1 run_check "${active}"
-    expect check_bounds_stalled_vault 1 'vault.sock did not answer within 1 seconds'
+    expect_bounded check_bounds_stalled_vault 'vault.sock did not answer within 1 seconds' "${started}"
     echo ok >"${scratch}/vault-mode"
 
     python3 -c 'import socket, sys, time; s = socket.socket(socket.AF_UNIX); s.bind(sys.argv[1]); s.listen(); c = [s.accept() for _ in range(9)]; time.sleep(600)' \
@@ -287,8 +298,20 @@ test_check() {
         [ -S "${sockets}/stalled.sock" ] && break
         sleep 0.1
     done
+    started="${SECONDS}"
     SSH_SOCKET="${sockets}/stalled.sock" SOCKET_WAIT=1 run_check "${active}"
-    expect check_bounds_stalled_agent 1 'stalled.sock did not answer within 1 seconds'
+    expect_bounded check_bounds_stalled_agent 'stalled.sock did not answer within 1 seconds' "${started}"
+    kill "${stalled_pid}" 2>/dev/null
+
+    python3 "${repo}/tests/stalling-agent.py" "${sockets}/no-sign.sock" "${scratch}/agent-key.pub" &
+    stalled_pid=$!
+    for _ in {1..50}; do
+        [ -S "${sockets}/no-sign.sock" ] && break
+        sleep 0.1
+    done
+    started="${SECONDS}"
+    SSH_SOCKET="${sockets}/no-sign.sock" SOCKET_WAIT=1 run_check "${active}"
+    expect_bounded check_bounds_stalled_signature 'no-sign.sock did not answer within 1 seconds' "${started}"
     kill "${stalled_pid}" 2>/dev/null
 
     dead_socket "${sockets}/dead.sock"
