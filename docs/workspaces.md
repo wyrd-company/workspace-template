@@ -30,14 +30,14 @@ Menagerie commits and pushes the workspace's Git repository. The `.gitignore` fi
 | Path | In a backup |
 | --- | --- |
 | `.devcontainer/`, `config.yml`, `.toha.json`, `.gitignore` | Yes |
-| `state/*/.gitignore` | Yes, only these five files under `state/` |
+| `state/.gitignore`, `state/*/.gitignore` | Yes, only these six files under `state/` |
 | Anything else under `state/` | No |
 | `repos/`, `tasks/`, `workflows/` | No. Their contents are Git repositories with their own remotes |
 | `docker/` | No |
 | Files directly in `workspace/` | Yes. They are user files |
 | Folders in `workspace/` | No. They are clones |
 
-A backup does not restore agent credentials, history or databases. `repos`, `tasks`, `workflows` and `docker` are not in Git, and they hold no placeholder file, so that `tasks` stays empty for `git worktree add`. Toha creates them when it applies the template, and Menagerie creates them when they are missing from a clone.
+A backup does not restore agent credentials, history or databases. `repos`, `tasks`, `workflows` and `docker` are not in Git, and they hold no placeholder file, so that `tasks` stays empty for `git worktree add`. A fresh clone of a backup has none of them, and the container cannot start while a bind source is missing. Toha creates them when it applies the template. On a fresh clone, create them with `mkdir` before the first start; once Menagerie creates its own bind sources ([menagerie#54](https://github.com/wyrd-company/menagerie/issues/54)), this step goes away.
 
 ## `state`
 
