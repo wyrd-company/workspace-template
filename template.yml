@@ -18,6 +18,16 @@ interview:
   - id: workspace
     computed: "toha_target_name"
 
+  # Never asked: Toha checks a skipped question's default, so a workspace name that cannot name
+  # a Xolotl key or a Wyrwood policy value stops the interview here, before anything is written.
+  - id: xolotl_key_name
+    type: text
+    prompt: Xolotl key name
+    when: "false"
+    default: "{{ workspace }}"
+    validate:
+      regex: '^[a-z0-9][a-z0-9_-]{0,62}$'
+
   - id: name
     type: text
     prompt: Workspace name
@@ -38,12 +48,16 @@ interview:
     default: https://xolotl.internal
     required: true
 
-  - id: xolotl_key
+  - id: xolotl_key_policy
     type: text
-    prompt: Xolotl client key path
-    description: The path of the client key assigned to the container
-    default: "devcontainer/{{ workspace }}"
+    prompt: Xolotl key policy
+    description: The Xolotl key policy only this host's workspaces use. A host sets its default in Toha's template-defaults.
     required: true
+    validate:
+      regex: '^[a-z0-9][a-z0-9_-]{0,62}$'
+
+  - id: xolotl_key
+    computed: "xolotl_key_policy ~ '/' ~ xolotl_key_name"
 
   - id: sdks
     type: multiselect
