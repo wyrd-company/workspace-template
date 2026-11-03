@@ -58,7 +58,7 @@ Examples of uses includes:
 
 ## Docker
 
-Devcontainers can, optionally, run [Docker](https://www.docker.com) server under S6-overlay, either as [Docker-in-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-in-docker) or [Docker-out-of-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-outside-of-docker). Docker-in-Docker is the normal case: its bind mounts resolve inside the devcontainer, so no host path is mirrored. Docker-outside-of-Docker is a special case for containers that help manage the host's Docker; it bind mounts the workspace's `docker/` folder at its host path, `$WORKSPACE_HOME/docker`, so the host daemon resolves the bind mounts of compose projects kept there. Toha and Menagerie create the folder, and a backup ignores it.
+Devcontainers can, optionally, run [Docker](https://www.docker.com) server under S6-overlay, either as [Docker-in-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-in-docker) or [Docker-out-of-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-outside-of-docker). Docker-in-Docker is the normal case: its bind mounts resolve inside the devcontainer, so no host path is mirrored. Docker-outside-of-Docker is a special case for containers that help manage the host's Docker; it bind mounts the workspace's `docker/` folder at its host path, `$WORKSPACE_HOME/docker`, so the host daemon resolves the bind mounts of compose projects kept there. Toha creates the folder, and a backup ignores it, so a fresh clone needs it created again (see [Backups](workspaces.md#backups)).
 
 ## Skills
 
