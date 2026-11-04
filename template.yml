@@ -70,7 +70,7 @@ interview:
     type: multiselect
     prompt: SDKs
     description: Which SDKs to install. Node will always be added.
-    options: [ bun, dotnet, flutter, go, node, python, rust ]
+    options: [ bun, dart, dotnet, flutter, go, node, python, rust ]
     default: [ node ]
 
   - id: docker
