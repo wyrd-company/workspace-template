@@ -19,6 +19,9 @@
         "ghcr.io/wyrd-company/devcontainers/dagu:latest": {
             "host": "0.0.0.0" // reachable by the main server's caddy (see runArgs)
         },
+        {%- if 'dart' in sdks %}
+        "ghcr.io/wyrd-company/devcontainers/dart:latest": {},
+        {%- endif %}
         {%- if docker == 'docker-in-docker' %}
         "ghcr.io/wyrd-company/devcontainers/docker-in-docker:latest": {},
         {%- elif docker == 'docker-outside-of-docker' %}
@@ -29,7 +32,7 @@
         {%- endif %}
         "ghcr.io/meaningful-ooo/devcontainer-features/fish:2": {},
         {%- if 'flutter' in sdks %}
-        "ghcr.io/wyrd-company/the-wyrding-way-design-system/flutter:latest": {},
+        "ghcr.io/wyrd-company/devcontainers/flutter:latest": {},
         {%- endif %}
         {%- if 'go' in sdks %}
         "ghcr.io/wyrd-company/devcontainers/go:latest": {},
@@ -250,6 +253,7 @@
 
     "runArgs": [
         "--network=homelab",
+        "--network-alias", "{{ workspace }}.homelab.internal",
         "--restart", "unless-stopped", // back up after a host reboot
         "-l", "devcontainer.id=${devcontainerId}",
         "-h", "{{ domain_name }}",
