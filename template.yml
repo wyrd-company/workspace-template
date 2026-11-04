@@ -37,6 +37,10 @@ interview:
     default: "{{ workspace | title }}"
     required: true
 
+  - id: remote
+    type: git
+    prompt: Workspace remote URL (empty for none)
+
   - id: domain_name
     type: text
     prompt: Host domain name
