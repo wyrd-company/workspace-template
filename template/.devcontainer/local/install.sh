@@ -89,7 +89,7 @@ download_openbao() {
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y --no-install-recommends ca-certificates curl jq iputils-ping
+apt-get install -y --no-install-recommends ca-certificates curl jq iputils-ping snap
 
 case "$(uname -m)" in
     x86_64|amd64) architecture=amd64 ;;
@@ -98,6 +98,8 @@ case "$(uname -m)" in
 esac
 
 download_openbao
+
+snap install aws-cli --classic
 
 # Run devcontainer local scripts
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
