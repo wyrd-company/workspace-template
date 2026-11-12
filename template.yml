@@ -110,6 +110,7 @@ interview:
 
 # Bind-mount sources with no template files; /tasks must stay empty for `git worktree add`
 directories:
+  - path: config/vector
   - path: repos
   - path: tasks
   - path: workflows
