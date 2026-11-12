@@ -86,6 +86,12 @@
         {%- if 'rust' in sdks %}
         {"source":"/workspaces/.shared/caches/cargo","target":"/usr/local/cargo","type":"bind"},
         {%- endif %}
+        // Caddy ==============================================================
+        {
+            "source": "${localWorkspaceFolder}/config/caddy",
+            "target": "/etc/caddy/conf.d",
+            "type": "bind"
+        },
         // Claude =============================================================
         {
             "source": "${localWorkspaceFolder}/state/claude",
