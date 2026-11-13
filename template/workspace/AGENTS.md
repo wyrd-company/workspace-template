@@ -8,6 +8,7 @@ Operators primarily work through agents in T3 Code. Direct SSH and VS Code acces
 uses the same shared `vscode` execution account. There are no per-human operating
 system accounts in the workspace; `vscode` and its home directory are part of the
 standardized workspace environment.
+
 See the `environment` skill for more info about the workspace environment configuration.
 
 Human operator identity is selected explicitly for Git commits and pushes, using
