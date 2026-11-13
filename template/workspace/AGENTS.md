@@ -8,12 +8,7 @@ Operators primarily work through agents in T3 Code. Direct SSH and VS Code acces
 uses the same shared `vscode` execution account. There are no per-human operating
 system accounts in the workspace; `vscode` and its home directory are part of the
 standardized workspace environment.
-
-`workspace-ansible` and `workspace-dotfiles` cooperate to standardize that environment.
-Root-owned configuration belongs to Ansible; configuration owned by `vscode` belongs
-to dotfiles. Prefer common settings in `/etc/**` when the application supports it;
-otherwise configure them through dotfiles. A setting's being in the execution
-account's home directory does not make it a human operator's personal preference.
+See the `environment` skill for more info about the workspace environment configuration.
 
 Human operator identity is selected explicitly for Git commits and pushes, using
 that operator's identity and key. It does not select a different OS account or
