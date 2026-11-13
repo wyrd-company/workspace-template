@@ -1,6 +1,14 @@
 # Workspaces
 
-This is what I call the combination of a local file tree + devcontainer that service it.
+A workspace is a devcontainer dedicated to a product or theme, such as `toolchain`,
+together with the local file tree it serves. It is a standardized environment for
+agents and the people directing them.
+
+Operators primarily work through agents via T3 Code. If they connect through SSH
+or VS Code, they use the same shared `vscode` execution account. A workspace does
+not provide a separate operating system account or personal configuration profile
+for each human. Git commits and pushes use the explicitly selected human
+operator's identity and key.
 
 ```tree
 ├── .devcontainer/                 # /etc/devcontainer (r/o; local/scripts.d writable)
@@ -23,6 +31,21 @@ This is what I call the combination of a local file tree + devcontainer that ser
     └── {workspace}.code-workspace
 ```
 
+## Standardization
+
+`workspace-ansible` and `workspace-dotfiles` work together to standardize the
+workspace. Their boundary follows configuration ownership: Ansible manages
+root-owned configuration, and dotfiles manages configuration owned by `vscode`.
+Both provide common workspace configuration.
+
+Prefer configuring common settings in `/etc/**` when supported by the application.
+When an application requires settings in the execution account's home directory,
+manage those settings through dotfiles. The application's use of a user-level
+configuration file does not imply a human operator's personal preferences.
+
+The same framing is included in the generated `workspace/AGENTS.md`, so agents
+receive it as workspace-wide context.
+
 ## Backups
 
 Menagerie commits and pushes the workspace's Git repository. The `.gitignore` files decide what that holds:
@@ -34,7 +57,7 @@ Menagerie commits and pushes the workspace's Git repository. The `.gitignore` fi
 | Anything else under `state/` | No |
 | `repos/`, `tasks/`, `workflows/` | No. Their contents are Git repositories with their own remotes |
 | `docker/` | No |
-| Files directly in `workspace/` | Yes. They are user files |
+| Files directly in `workspace/` | Yes. They are workspace files |
 | Folders in `workspace/` | No. They are clones |
 
 A backup does not restore agent credentials, history or databases. `repos`, `tasks`, `workflows` and `docker` are not in Git, and they hold no placeholder file, so that `tasks` stays empty for `git worktree add`. A fresh clone of a backup has none of them, and the container cannot start while a bind source is missing. Toha creates them when it applies the template. On a fresh clone, create them with `mkdir` before the first start; once Menagerie creates its own bind sources ([menagerie#54](https://github.com/wyrd-company/menagerie/issues/54)), this step goes away.
