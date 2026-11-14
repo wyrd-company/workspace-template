@@ -9,7 +9,7 @@ uses the same shared `vscode` execution account. There are no per-human operatin
 system accounts in the workspace; `vscode` and its home directory are part of the
 standardized workspace environment.
 
-See the `environment` skill for more info about the workspace environment configuration.
+See the `standards` skill's workspace standard for how the workspace environment is configured and how to fit it to this workspace's needs.
 
 Human operator identity is selected explicitly for Git commits and pushes, using
 that operator's identity and key. It does not select a different OS account or
