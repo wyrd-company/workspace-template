@@ -4,6 +4,7 @@
 # folder and does not read a .gitignore inside it.
 /*
 !/.gitignore
+!/charm/
 !/claude/
 !/codex/
 !/pi/

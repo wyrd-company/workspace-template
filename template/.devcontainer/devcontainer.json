@@ -92,6 +92,12 @@
             "target": "/etc/caddy/conf.d",
             "type": "bind"
         },
+        // Charm ==============================================================
+        {   // Skate store: the resource ledger each thread keeps (see the ledger skill)
+            "source": "${localWorkspaceFolder}/state/charm",
+            "target": "/home/vscode/.local/share/charm",
+            "type": "bind"
+        },
         // Claude =============================================================
         {
             "source": "${localWorkspaceFolder}/state/claude",

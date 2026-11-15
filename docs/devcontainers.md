@@ -15,6 +15,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 /etc/dagu/ /etc/trowel/ /etc/opentelemetry-collector/   # service configs, rendered by workspace-ansible
 /home/vscode/                      # `vscode` profile: .claude, .codex, .pi, .t3/userdata are workspace mounts (state/)
 │   ├── .agents/skills/            # clone of wyrd-company/skills (chezmoi); ~/.claude/skills/* symlink into it
+│   ├── .local/share/charm/        # Skate store (resource ledgers), a workspace mount (state/charm)
 │   ├── .local/share/dagu/         # Dagu state, a workspace mount (state/workflows)
 │   └── mnemonic-vault/            # user-level vault, host clone shared by every workspace
 /repos/                            # bare clones: memory.git, tasks.git, workflows.git
