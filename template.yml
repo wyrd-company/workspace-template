@@ -57,7 +57,7 @@ interview:
   - id: xolotl_url
     type: text
     prompt: Xolotl gateway URL
-    description: Claude Code and Codex reach their models through this gateway.
+    description: Claude Code, Codex and Grok reach their models through this gateway.
     default: https://xolotl.internal
     required: true
 

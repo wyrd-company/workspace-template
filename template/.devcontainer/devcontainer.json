@@ -38,6 +38,7 @@
         {%- if 'go' in sdks %}
         "ghcr.io/wyrd-company/devcontainers/go:latest": {},
         {%- endif %}
+        "ghcr.io/wyrd-company/devcontainers/grok-cli:1": {}, // Grok through Xolotl
         "ghcr.io/meaningful-ooo/devcontainer-features/homebrew:2": {},
         "./local": {}, // workspace-local feature: runs scripts.d/* at image build
         "ghcr.io/devcontainers/features/node:2": {},

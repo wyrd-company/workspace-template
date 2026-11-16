@@ -10,7 +10,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 /etc/devcontainer/                 # r/o mount of the workspace .devcontainer folder
 │   └── local/scripts.d/           # the one writable part: scripts the local feature runs at image build
 /etc/workspace/config.yml          # r/o mount of the workspace config.yml (the template answers)
-/etc/claude-code/ /etc/codex/      # harness system settings, rendered by workspace-ansible
+/etc/claude-code/ /etc/codex/ /etc/grok/   # harness system settings, rendered by workspace-ansible
 /etc/dagu/ /etc/trowel/ /etc/opentelemetry-collector/   # service configs, rendered by workspace-ansible
 /home/vscode/                      # `vscode` profile: .claude, .codex, .pi, .t3/userdata are workspace mounts (state/)
 │   ├── .agents/skills/            # built real-directory skills view read by Pi and Codex
@@ -105,7 +105,7 @@ The policy's contract uses mount target `/run/wyrwood`. The access group is `100
 
 ## Xolotl
 
-Claude Code (Anthropic models) and Codex CLI (every other model) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). Neither holds an API key: the settings rendered by workspace-ansible read the key through `vault.sock`. Menagerie sets `MENAGERIE_XOLOTL_KEY` to its `<key policy>/<key name>` address in the container; the workspace configuration passes that address to workspace-ansible.
+Claude Code (Anthropic models), Codex CLI (every other model) and Grok CLI (grok-4.7) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). None holds an API key: the settings rendered by workspace-ansible read the key through `vault.sock`. Menagerie sets `MENAGERIE_XOLOTL_KEY` to its `<key policy>/<key name>` address in the container; the workspace configuration passes that address to workspace-ansible.
 
 `kv/xolotl` is the deployed Xolotl's KV v2 mount and prefix, in the `wyrwood` namespace it shares with Wyrwood.
 
