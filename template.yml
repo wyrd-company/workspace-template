@@ -5,7 +5,7 @@ data:
   default_org: wyrd-company
   default_domain: wyrd.internal
   default_nats_url: nats://nats.wyrd.internal:4222
-  default_open_observe_url: openobserve.internal:5081
+  default_otel_endpoint_url: otel.internal:5081
   workspace_name_must_be_lowercase_letters_digits_underscore_or_hyphen: at most 63 characters, starting with a letter or digit
 
 interview:
@@ -98,8 +98,8 @@ interview:
   - id: otlp_endpoint
     type: text
     prompt: OpenTelemetry reciever URL
-    description: The URL to the OpenTelemetry reciever (OpenObserve)
-    default: "{{ default_open_observe_url }}"
+    description: The URL to the OpenTelemetry reciever
+    default: "{{ default_otel_endpoint_url }}"
     required: true
 
   - id: ansible_repo
