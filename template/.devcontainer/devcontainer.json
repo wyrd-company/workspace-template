@@ -120,6 +120,12 @@
             "target": "/workflows",
             "type": "bind"
         },
+        // Deck ===============================================================
+        {
+            "source": "${localWorkspaceFolder}/state/deck",
+            "target": "/home/vscode/.local/share/deck",
+            "type": "bind"
+        },
         // Devcontainer =======================================================
         {
             "source": "${localWorkspaceFolder}/.devcontainer",
