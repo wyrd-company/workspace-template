@@ -145,6 +145,12 @@
             "type": "bind"
         },
         {%- endif %}
+        // Git operators ======================================================
+        {   // Which operator each T3 thread commits as (git operator set); kept across rebuilds
+            "source": "${localWorkspaceFolder}/state/git-operators",
+            "target": "/home/vscode/.local/state/git-operators",
+            "type": "bind"
+        },
         // Mnemonic ===========================================================
         {   // mnemonic user vault (host clone of mnemonic-vault#main, shared by every workspace on the host)
             "source": "/workspaces/.shared/mnemonic-vault",

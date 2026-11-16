@@ -17,6 +17,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 │   ├── .agents/skills/            # clone of wyrd-company/skills (chezmoi); ~/.claude/skills/* symlink into it
 │   ├── .local/share/charm/        # Skate store (resource ledgers), a workspace mount (state/charm)
 │   ├── .local/share/dagu/         # Dagu state, a workspace mount (state/workflows)
+│   ├── .local/state/git-operators/ # each T3 thread's Git operator, a workspace mount (state/git-operators)
 │   └── mnemonic-vault/            # user-level vault, host clone shared by every workspace
 /repos/                            # bare clones: memory.git, tasks.git, workflows.git
 /tasks/                            # workspace tasks: orphan branch workspace/{workspace} of tasks
