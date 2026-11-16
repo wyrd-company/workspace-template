@@ -97,10 +97,6 @@ case "$(uname -m)" in
     *) err "Unsupported architecture: $(uname -m)." ;;
 esac
 
-download_openbao
-
-snap install aws-cli --classic
-
 # Run devcontainer local scripts
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 shopt -s nullglob
