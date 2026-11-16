@@ -20,6 +20,7 @@ operator's identity and key.
 │   ├── claude/                    # ~/.claude
 │   ├── codex/                     # ~/.codex
 │   ├── deck/                      # ~/.local/share/deck
+│   ├── git-operators/             # ~/.local/state/git-operators (each thread's Git operator)
 │   ├── pi/                        # ~/.pi
 │   ├── t3/                        # ~/.t3/userdata
 │   └── workflows/                 # ~/.local/share/dagu (Dagu state)
@@ -55,7 +56,7 @@ Menagerie commits and pushes the workspace's Git repository. The `.gitignore` fi
 | Path | In a backup |
 | --- | --- |
 | `.devcontainer/`, `config.yml`, `.toha.json`, `.gitignore` | Yes |
-| `state/.gitignore`, `state/*/.gitignore` | Yes, only these eight files under `state/` |
+| `state/.gitignore`, `state/*/.gitignore` | Yes, only these nine files under `state/` |
 | Anything else under `state/` | No |
 | `repos/`, `tasks/`, `workflows/` | No. Their contents are Git repositories with their own remotes |
 | `docker/` | No |
@@ -72,6 +73,7 @@ This stores agent-specific state. Git ignores all of it except each folder's `.g
 - `claude` is where the local claude profile is stored
 - `codex` is where the local codex profile is stored
 - `deck` is where deck stores its state
+- `git-operators` is the registry of which operator each T3 thread commits as (`git operator set`), so a rebuild does not unregister every thread
 - `pi` is where the local pi profile is stored
 - `t3` is where the t3code server user data is stored
 - `workflows` is where Dagu stores its state
