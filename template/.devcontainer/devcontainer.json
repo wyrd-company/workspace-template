@@ -54,7 +54,7 @@
         "ghcr.io/wyrd-company/devcontainers/t3code-server:latest": {},
         "ghcr.io/wyrd-company/trowel/trowel:0": {
             "natsUrl": "{{ nats_url }}"
-        }
+        },
         "ghcr.io/wyrd-company/devcontainers/vector:1": {
             "watchConfigMethod": "poll"
         }
