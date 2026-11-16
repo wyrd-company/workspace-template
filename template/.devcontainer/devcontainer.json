@@ -52,10 +52,9 @@
         {%- endif %}
         "ghcr.io/wyrd-company/devcontainers/sshd:latest": {},
         "ghcr.io/wyrd-company/devcontainers/t3code-server:latest": {},
-        // Off until there is a NATS server to relay from.
-        // "ghcr.io/wyrd-company/trowel/trowel:0": {
-        //     "natsUrl": "{{ nats_url }}"
-        // }
+        "ghcr.io/wyrd-company/trowel/trowel:0": {
+            "natsUrl": "{{ nats_url }}"
+        }
         "ghcr.io/wyrd-company/devcontainers/vector:1": {
             "watchConfigMethod": "poll"
         }
@@ -168,6 +167,12 @@
         {   // Worktree of this workspace's tasks branch (workspace-ansible)
             "source": "${localWorkspaceFolder}/tasks",
             "target": "/tasks",
+            "type": "bind"
+        },
+        // Trowel =============================================================
+        {
+            "source": "${localWorkspaceFolder}/config/trowel",
+            "target": "/etc/trowel/conf.d",
             "type": "bind"
         },
         // Workspace Config ===================================================
