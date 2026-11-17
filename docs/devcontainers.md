@@ -14,7 +14,9 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 /etc/claude-code/ /etc/codex/      # harness system settings, rendered by workspace-ansible
 /etc/dagu/ /etc/trowel/ /etc/opentelemetry-collector/   # service configs, rendered by workspace-ansible
 /home/vscode/                      # `vscode` profile: .claude, .codex, .pi, .t3/userdata are workspace mounts (state/)
-│   ├── .agents/skills/            # clone of wyrd-company/skills (chezmoi); ~/.claude/skills/* symlink into it
+│   ├── .agents/skills/            # built real-directory skills view read by Pi and Codex
+│   ├── .claude/skills/            # per-skill links into ~/.agents/skills for Claude Code
+│   ├── .local/share/skills/base/  # clean main clone of wyrd-company/skills; skill PRs use worktrees of it
 │   ├── .local/share/charm/        # Skate store (resource ledgers), a workspace mount (state/charm)
 │   ├── .local/share/dagu/         # Dagu state, a workspace mount (state/workflows)
 │   ├── .local/state/git-operators/ # each T3 thread's Git operator, a workspace mount (state/git-operators)
@@ -66,7 +68,7 @@ Devcontainers can, optionally, run [Docker](https://www.docker.com) server under
 
 ## Skills
 
-The shared skills repository is cloned by the dotfiles to `~/.agents/skills` (read natively by Pi and Codex), with each skill symlinked into `~/.claude/skills/` for Claude Code. Changes to a shared skill are made on a branch in that clone and submitted as a PR to [`wyrd-company/skills`](https://github.com/wyrd-company/skills).
+The dotfiles keep a clean `main` clone of [`wyrd-company/skills`](https://github.com/wyrd-company/skills) at `~/.local/share/skills/base`. Make skill changes in worktrees of that clone and submit them as PRs. `skills sync` builds the base with overlays and publishes real files at `~/.agents/skills`, which Pi and Codex read. Each `~/.claude/skills/<name>` link points into that published view for Claude Code. See the dotfiles’ [Skills guide](https://github.com/wyrd-company/workspace-dotfiles/blob/main/docs/skills.md) for the layout, migration, updates and rollback.
 
 Workspace-wide skill overlays live in the host's `skills/` folder, mounted read-write at `/skills`; see the [instructions standard](https://github.com/wyrd-company/skills/blob/main/standards/references/instructions.md) for what belongs there.
 
