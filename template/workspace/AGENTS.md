@@ -11,6 +11,8 @@ standardized workspace environment.
 
 See the `standards` skill's workspace standard for how the workspace environment is configured and how to fit it to this workspace's needs.
 
+`/skills` is the writable host `skills/` folder for workspace-wide skill overlays; see the [instructions standard](https://github.com/wyrd-company/skills/blob/main/standards/references/instructions.md) for what belongs there.
+
 Human operator identity is selected explicitly for Git commits and pushes, using
 that operator's identity and key. It does not select a different OS account or
 configuration profile.

@@ -113,6 +113,19 @@ class RenderedJsonTests(unittest.TestCase):
         self.assertIn("ghcr.io/wyrd-company/devcontainers/docker-outside-of-docker:latest", features)
         self.assertNotIn("ghcr.io/devcontainers/features/rust:1", features)
 
+    def test_workspace_skills_are_empty_and_mounted_read_write(self):
+        target = self.render("skills", {})
+        skills = target / "skills"
+        self.assertEqual(list(skills.iterdir()), [skills / ".gitkeep"])
+        self.assertEqual((skills / ".gitkeep").read_bytes(), b"")
+        mounts = parse_jsonc(target / ".devcontainer/devcontainer.json")["mounts"]
+        skills_mounts = [mount for mount in mounts if mount["target"].split(",")[0] == "/skills"]
+        self.assertEqual(skills_mounts, [{
+            "source": "${localWorkspaceFolder}/skills",
+            "target": "/skills",
+            "type": "bind",
+        }])  # A bind mount is read-write by default; no read-only option or target suffix.
+
 
 class JsoncParserTests(unittest.TestCase):
     """The checks above are only as good as the parser: it must reject what broke 0.3.0."""

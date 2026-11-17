@@ -6,6 +6,8 @@ generated workspace as a Git repository even when the URL is empty, so it can
 save `.toha.json` for template tracking and updates. An existing repository is
 left unchanged.
 
+`skills/` starts empty and mounts read-write at `/skills` for workspace-wide skill overlays; see the [instructions standard](https://github.com/wyrd-company/skills/blob/main/standards/references/instructions.md) for what belongs there.
+
 - [Workspaces](docs/workspaces.md): the file tree and what a backup holds.
 - [Devcontainers](docs/devcontainers.md): the container, provisioning and host prerequisites.
 

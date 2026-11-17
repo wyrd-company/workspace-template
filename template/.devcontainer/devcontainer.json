@@ -169,6 +169,12 @@
             "target": "/repos",
             "type": "bind"
         },
+        // Skills =============================================================
+        {
+            "source": "${localWorkspaceFolder}/skills",
+            "target": "/skills",
+            "type": "bind"
+        },
         // T3Code =============================================================
         {   // T3Code server userdata
             "source": "${localWorkspaceFolder}/state/t3",

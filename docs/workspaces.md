@@ -15,6 +15,7 @@ operator's identity and key.
 ├── config.yml                     # /etc/workspace/config.yml (r/o), the template answers
 ├── docker/                        # $WORKSPACE_HOME/docker: compose projects, docker-outside-of-docker only
 ├── repos/                         # /repos: bare clones memory.git, tasks.git, workflows.git
+├── skills/                        # /skills (r/w): workspace-wide skill overlays
 ├── state/
 │   ├── charm/                     # ~/.local/share/charm (Skate store: resource ledgers)
 │   ├── claude/                    # ~/.claude
@@ -56,6 +57,7 @@ Menagerie commits and pushes the workspace's Git repository. The `.gitignore` fi
 | Path | In a backup |
 | --- | --- |
 | `.devcontainer/`, `config.yml`, `.toha.json`, `.gitignore` | Yes |
+| `skills/` | Yes. Workspace-wide skill overlays |
 | `state/.gitignore`, `state/*/.gitignore` | Yes, only these nine files under `state/` |
 | Anything else under `state/` | No |
 | `repos/`, `tasks/`, `workflows/` | No. Their contents are Git repositories with their own remotes |
