@@ -20,6 +20,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 │   ├── .local/state/git-operators/ # each T3 thread's Git operator, a workspace mount (state/git-operators)
 │   └── mnemonic-vault/            # user-level vault, host clone shared by every workspace
 /repos/                            # bare clones: memory.git, tasks.git, workflows.git
+/skills/                           # r/w mount of the workspace skills/ folder: workspace-wide skill overlays
 /tasks/                            # workspace tasks: orphan branch workspace/{workspace} of tasks
 /workflows/main/                   # shared sub-dags and bin/ scripts: main of workflows (read only, PRs from worktrees/)
 /workflows/local/                  # workspace workflows: orphan branch workspace/{workspace} of workflows
@@ -65,7 +66,9 @@ Devcontainers can, optionally, run [Docker](https://www.docker.com) server under
 
 ## Skills
 
-Shared agent skills are not mounted. The dotfiles clone [`wyrd-company/skills`](https://github.com/wyrd-company/skills) to `~/.agents/skills` (read natively by Pi and Codex) and symlink each skill into `~/.claude/skills/` for Claude Code. Changes to a skill are made on a branch in that clone and submitted as a PR.
+The shared skills repository is cloned by the dotfiles to `~/.agents/skills` (read natively by Pi and Codex), with each skill symlinked into `~/.claude/skills/` for Claude Code. Changes to a shared skill are made on a branch in that clone and submitted as a PR to [`wyrd-company/skills`](https://github.com/wyrd-company/skills).
+
+Workspace-wide skill overlays live in the host's `skills/` folder, mounted read-write at `/skills`; see the [instructions standard](https://github.com/wyrd-company/skills/blob/main/standards/references/instructions.md) for what belongs there.
 
 ## SSHD
 
