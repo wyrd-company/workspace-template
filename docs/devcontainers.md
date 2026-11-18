@@ -83,8 +83,8 @@ Docker refuses to create the container while that directory is missing, and the 
 1. On the host, create the directory owned by the agent's user: `sudo install -d -o wyrwood -g wyrwood -m 0700 /run/wyrwood/containers/devcontainer-<workspace>`. The agent applies the access group when it opens it.
 2. `dcb up --skip-post-create` creates and starts the container without running its lifecycle commands, which need the sockets.
 3. `docker stop devcontainer-<workspace>`.
-4. Bind `devcontainer-<workspace>` to its policies in the Wyrwood UI, with the access group, the policies and the values of `customizations.menagerie`. The sockets appear in the directory.
-5. Issue the Xolotl key.
+4. Bind `devcontainer-<workspace>` to its policies in the Wyrwood UI, with the declared access group and the policies and values appropriate for the workspace. The sockets appear in the directory.
+5. Issue the Xolotl key. Set `MENAGERIE_XOLOTL_KEY` to its `<key policy>/<key name>` address in the devcontainer definition before creating the container in step 2.
 6. `docker start devcontainer-<workspace>`.
 7. `dcb run-user-commands` runs the lifecycle commands.
 
@@ -101,30 +101,26 @@ The policy's contract uses mount target `/run/wyrwood`. The access group is `100
 
 ## Xolotl
 
-Claude Code (Anthropic models) and Codex CLI (every other model) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). Neither holds an API key: `/etc/claude-code/managed-settings.json` (`apiKeyHelper`) and `/etc/codex/requirements.toml` (`auth.command`), rendered by workspace-ansible, run `bao kv get -field=api_key kv/xolotl/keys/<xolotl_key>` through `vault.sock`. `xolotl_key` is the Xolotl `<key policy>/<key name>` of the key. The template computes it from two parts:
-
-- `xolotl_key_policy`, the one question. Its value is the host's key policy, which only this host's workspaces use. It has no template default, because a default cannot name a host. Set it once for each host: see [Per-host key policy](#per-host-key-policy).
-- `xolotl_key_name`, which is the workspace name and is never asked.
+Claude Code (Anthropic models) and Codex CLI (every other model) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). Neither holds an API key: the settings rendered by workspace-ansible read the key through `vault.sock`. Menagerie sets `MENAGERIE_XOLOTL_KEY` to its `<key policy>/<key name>` address in the container; the workspace configuration passes that address to workspace-ansible.
 
 `kv/xolotl` is the deployed Xolotl's KV v2 mount and prefix, in the `wyrwood` namespace it shares with Wyrwood.
 
 ## Provisioning
 
-The rendered `.devcontainer/devcontainer.json` declares what the workspace needs from Wyrwood and Xolotl, under `customizations.menagerie`, in the form [Menagerie's provisioning declaration](https://github.com/wyrd-company/menagerie/blob/main/docs/specifications/provisioning-declaration.yml) defines. For a workspace called `sample`, on a host whose key policy is `host-sample`:
+The rendered `.devcontainer/devcontainer.json` declares the workspace access group, under `customizations.menagerie`, in the form [Menagerie's provisioning declaration](https://github.com/wyrd-company/menagerie/blob/main/docs/specifications/provisioning-declaration.yml) defines. For a workspace called `sample`:
 
 ```jsonc
 "runArgs": ["--name", "devcontainer-sample"],
 "customizations": { "menagerie": {
-  "wyrwood": { "accessGroup": 1000, "policies": ["workspace", "xolotl-client-key"], "values": {"xolotl_key_name": "sample"} },
-  "xolotl": { "keyPolicy": "host-sample", "keyName": "sample" }
+  "wyrwood": { "accessGroup": 1000 }
 }}
 ```
 
-Menagerie reads the container name from `runArgs`, issues the key, makes the binding and creates the container before its first start.
+Menagerie reads the container name from `runArgs`, selects policies, issues the key, makes the binding and creates the container before its first start. An imported workspace keeps its stored policies, values and key through an upgrade.
 
 ### Workspace names
 
-A workspace name holds lowercase letters, digits, `_` and `-`, starts with a letter or digit, and has at most 63 characters, so that it can name a Xolotl key and be a Wyrwood policy value. Any other name stops the interview before a file is written, with a template error on `xolotl_key_name` that quotes the rule. Toha has no way to raise a message of a template's own, so the error ends in `invalid float literal`. No answer or configured default can replace the name.
+A workspace name holds lowercase letters, digits, `_` and `-`, starts with a letter or digit, and has at most 63 characters, so that it can name a Xolotl key and be a Wyrwood policy value. Any other name stops the interview before a file is written, with a template error on `validated_workspace` that quotes the rule. Toha has no way to raise a message of a template's own, so the error ends in `invalid float literal`. No answer or configured default can replace the name.
 
 ### Start check
 
@@ -156,30 +152,9 @@ Folders under `/workspaces/.shared`, owned by the `vscode` user (UID 1000):
 
 A Docker network called `homelab` that containers can attach to, shared with the main server's Caddy.
 
-### Wyrwood policies
+### Wyrwood policies and Xolotl key policy
 
-Two policies on the host's Wyrwood controller, each on the allowlist of Menagerie's operator key:
-
-- `workspace` gives the container its mount target, `/run/wyrwood`, its SSH key, and what workspace-ansible and the dotfiles read.
-- `xolotl-client-key` allows `read` on `kv/data/xolotl/keys/<key policy>/<xolotl_key_name>`, and nothing else. The key policy is fixed in the path, and the name comes from the binding's `xolotl_key_name` value, so that each workspace reads only its own key and cannot name a key of another host.
-
-The policy name is fixed in the template and the path names one key policy, so one controller serves one key policy.
-
-### Xolotl key policy
-
-A Xolotl key policy, which only this host's workspaces use. A scoped key for this key policy, with the `keys` scope, lets Menagerie issue the workspaces' keys.
-
-### Per-host key policy
-
-Give the host's key policy as the default answer, in Toha's [`template-defaults`](https://wyrd.foo/docs/toha/configuration), so that no one types it for each workspace:
-
-```yaml
-template-defaults:
-  "gh:wyrd-company/workspace-template":
-    xolotl_key_policy: host-sample
-```
-
-The file is `/var/lib/menagerie/toha/config/config.yml` for Menagerie, and Toha's user configuration, `~/.config/toha/config.yml`, for the `toha` command. The key is the template's formal name, which `toha templates list` shows. Without this default, the interview asks for the key policy, and an answer can replace the default for one workspace.
+Configure Menagerie with the workspace policies and the Xolotl key policy for the host. The selected Wyrwood policies must allow the workspace to use its sockets and read its issued key. Menagerie stores each workspace's selection and key address.
 
 ## `vscode` user
 

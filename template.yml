@@ -23,7 +23,7 @@ interview:
   # Xolotl key or a Wyrwood policy value stops the interview here, before a file is written. Toha
   # has no way to raise an error, so converting the rule's text to a number is the failure, and
   # the error quotes this expression.
-  - id: xolotl_key_name
+  - id: validated_workspace
     computed: >-
       workspace
       if (workspace | length <= 63
@@ -54,17 +54,6 @@ interview:
     description: Claude Code and Codex reach their models through this gateway.
     default: https://xolotl.internal
     required: true
-
-  - id: xolotl_key_policy
-    type: text
-    prompt: Xolotl key policy
-    description: The Xolotl key policy only this host's workspaces use. A host sets its default in Toha's template-defaults.
-    required: true
-    validate:
-      regex: '^[a-z0-9][a-z0-9_-]{0,62}$'
-
-  - id: xolotl_key
-    computed: "xolotl_key_policy ~ '/' ~ xolotl_key_name"
 
   - id: sdks
     type: multiselect

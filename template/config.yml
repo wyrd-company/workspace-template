@@ -5,5 +5,5 @@ nats_url: {{nats_url}}
 org: {{org}}
 otlp_endpoint: {{otlp_endpoint}}
 workspace: {{workspace}}
-xolotl_key: {{xolotl_key}}
+xolotl_key: "{% raw %}{{ lookup('env', 'MENAGERIE_XOLOTL_KEY') }}{% endraw %}"
 xolotl_url: {{xolotl_url}}

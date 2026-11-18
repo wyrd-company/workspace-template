@@ -42,13 +42,18 @@ jq_block='.configuration.customizations.menagerie'
 
 test_render_matches_schema() {
     local output block
-    output="$(render sample '{"xolotl_key_policy":"host-sample"}')"
+    if ! grep -Eq '^  - id: (xolotl_key_policy|xolotl_key_name)$' "${repo}/template.yml"; then
+        pass "render_has_no_removed_key_questions"
+    else
+        miss "render_has_no_removed_key_questions" "obsolete interview field found"
+    fi
+    output="$(render sample '{}')"
     [ "$(jq -r .status <<<"${output}")" = applied ] || { miss "render sample" "${output}"; return; }
     if ! block="$(dcb read-configuration --workspace-folder "${scratch}/targets/sample" | jq -cS "${jq_block}")"; then
         miss "dcb reads the rendered definition" "dcb failed"
         return
     fi
-    if [ "${block}" = '{"wyrwood":{"accessGroup":1000,"policies":["workspace","xolotl-client-key"],"values":{"xolotl_key_name":"sample"}},"xolotl":{"keyName":"sample","keyPolicy":"host-sample"}}' ]; then
+    if [ "${block}" = '{"wyrwood":{"accessGroup":1000}}' ]; then
         pass "render_block_equals_declaration"
     else
         miss "render_block_equals_declaration" "${block}"
@@ -59,7 +64,7 @@ test_render_matches_schema() {
     else
         miss "render_block_valid_against_schema" "${block}"
     fi
-    if grep -qx 'xolotl_key: host-sample/sample' "${scratch}/targets/sample/config.yml"; then
+    if grep -Fxq "xolotl_key: \"{{ lookup('env', 'MENAGERIE_XOLOTL_KEY') }}\"" "${scratch}/targets/sample/config.yml"; then
         pass "render_config_keeps_xolotl_key"
     else
         miss "render_config_keeps_xolotl_key" "$(cat "${scratch}/targets/sample/config.yml")"
@@ -71,7 +76,7 @@ test_render_matches_schema() {
         miss "render_container_name_in_run_args" "no --name devcontainer-sample"
     fi
     if [ "$(dcb read-configuration --workspace-folder "${scratch}/targets/sample" | jq -r .configuration.postStartCommand)" \
-        = 'bash /etc/devcontainer/check-provisioning.sh host-sample/sample' ] \
+        = 'bash /etc/devcontainer/check-provisioning.sh' ] \
         && [ -f "${scratch}/targets/sample/.devcontainer/check-provisioning.sh" ]; then
         pass "render_runs_check_at_post_start"
     else
@@ -82,7 +87,7 @@ test_render_matches_schema() {
 test_render_refuses_workspace_name() {
     local name output
     for name in Upper.Case has.dot UPPER -leading _leading 'has space' "$(printf 'a%.0s' {1..64})"; do
-        output="$(render "./${name}" '{"xolotl_key_policy":"host-sample"}')"
+        output="$(render "./${name}" '{}')"
         if [ "$(jq -r .kind <<<"${output}")" = render ] && [ ! -e "${scratch}/targets/${name}" ] \
             && grep -q 'workspace_name_must_be_lowercase' <<<"${output}"; then
             pass "render_refuses_workspace_name ${name:0:20}"
@@ -90,51 +95,12 @@ test_render_refuses_workspace_name() {
             miss "render_refuses_workspace_name ${name:0:20}" "${output}"
         fi
     done
-    output="$(render "$(printf 'a%.0s' {1..63})" '{"xolotl_key_policy":"host-sample"}')"
+    output="$(render "$(printf 'a%.0s' {1..63})" '{}')"
     if [ "$(jq -r .status <<<"${output}")" = applied ]; then
         pass "render_accepts_63_character_workspace"
     else
         miss "render_accepts_63_character_workspace" "${output}"
     fi
-}
-
-test_render_key_policy() {
-    local output
-    output="$(render no-policy '{}')"
-    if [ "$(jq -r .status <<<"${output}")" = questions ] && [ ! -e "${scratch}/targets/no-policy" ]; then
-        pass "render_asks_for_key_policy_without_default"
-    else
-        miss "render_asks_for_key_policy_without_default" "${output}"
-    fi
-    output="$(render bad-policy '{"xolotl_key_policy":"host/sample"}')"
-    if [ "$(jq -r .status <<<"${output}")" != applied ] && [ ! -e "${scratch}/targets/bad-policy" ]; then
-        pass "render_refuses_key_policy_with_slash"
-    else
-        miss "render_refuses_key_policy_with_slash" "${output}"
-    fi
-    printf 'template-defaults:\n  "%s":\n    xolotl_key_policy: host-configured\n' "${repo}" \
-        >"${XDG_CONFIG_HOME}/toha/config.yml"
-    render configured '{}' >/dev/null
-    if grep -qx 'xolotl_key: host-configured/configured' "${scratch}/targets/configured/config.yml" 2>/dev/null; then
-        pass "render_takes_key_policy_from_template_defaults"
-    else
-        miss "render_takes_key_policy_from_template_defaults" "no host-configured key"
-    fi
-    printf 'template-defaults:\n  "%s":\n    xolotl_key_name: other\n    xolotl_key_policy: host-configured\n' "${repo}" \
-        >"${XDG_CONFIG_HOME}/toha/config.yml"
-    render fixed-name '{}' >/dev/null
-    if grep -qx 'xolotl_key: host-configured/fixed-name' "${scratch}/targets/fixed-name/config.yml" 2>/dev/null; then
-        pass "render_key_name_ignores_configured_default"
-    else
-        miss "render_key_name_ignores_configured_default" "the name is not the workspace name"
-    fi
-    output="$(render Bad.Configured '{}')"
-    if [ ! -e "${scratch}/targets/Bad.Configured" ]; then
-        pass "render_configured_default_does_not_admit_bad_name"
-    else
-        miss "render_configured_default_does_not_admit_bad_name" "${output}"
-    fi
-    rm -f "${XDG_CONFIG_HOME}/toha/config.yml"
 }
 
 # ---- check-provisioning.sh --------------------------------------------------------------------
@@ -190,7 +156,7 @@ run_check() {
         BAO_ADDR="unix://${sockets}/vault.sock" VAULT_ADDR="unix://${sockets}/vault.sock" \
         SSH_AUTH_SOCK="${SSH_SOCKET:-${sockets}/ssh-agent.sock}" PROVISIONING_WAIT_SECONDS="${WAIT:-20}" \
         PROVISIONING_SOCKET_SECONDS="${SOCKET_WAIT:-30}" ${EXTRA_ENV:-} \
-        bash "${check}" host-sample/sample 2>&1)"
+        MENAGERIE_XOLOTL_KEY=host-sample/sample bash "${check}" 2>&1)"
     rc=$?
 }
 
@@ -348,7 +314,6 @@ test_check() {
 
 test_render_matches_schema
 test_render_refuses_workspace_name
-test_render_key_policy
 test_check
 
 if [ "${checks}" -eq 0 ]; then

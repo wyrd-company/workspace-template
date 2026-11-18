@@ -216,11 +216,8 @@
         // What Menagerie provisions before the first start. The container name comes from runArgs --name.
         "menagerie": {
             "wyrwood": {
-                "accessGroup": 1000, // the vscode user's group
-                "policies": ["workspace", "xolotl-client-key"],
-                "values": {"xolotl_key_name": "{{ xolotl_key_name }}"}
-            },
-            "xolotl": {"keyPolicy": "{{ xolotl_key_policy }}", "keyName": "{{ xolotl_key_name }}"}
+                "accessGroup": 1000 // the vscode user's group
+            }
         },
         "vscode": {
             "extensions": [
@@ -289,7 +286,7 @@
     },
 
     // Every start: a failure here fails the job that started the container.
-    "postStartCommand": "bash /etc/devcontainer/check-provisioning.sh {{ xolotl_key }}",
+    "postStartCommand": "bash /etc/devcontainer/check-provisioning.sh",
 
     "shutdownAction": "none",
     "overrideCommand": false,

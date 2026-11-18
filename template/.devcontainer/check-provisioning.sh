@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # postStartCommand: waits for the playbook, then proves that the Wyrwood sockets work.
-# Takes the Xolotl key as <policy>/<name>. It discards the output of every check, so no
+# Reads the Xolotl key address from the provisioned container environment. It discards the output of every check, so no
 # token, key or server text reaches the job's log.
 set -uo pipefail
 
-xolotl_key="${1:?usage: check-provisioning.sh <key-policy>/<key-name>}"
+xolotl_key="${MENAGERIE_XOLOTL_KEY:?MENAGERIE_XOLOTL_KEY is required}"
 # The playbook's first run clones every repository. This bound times the host, never a person.
 wait_seconds="${PROVISIONING_WAIT_SECONDS:-1800}"
 poll_seconds=2
