@@ -4,6 +4,7 @@ name: {{name}}
 nats_url: {{nats_url}}
 org: {{org}}
 otlp_endpoint: {{otlp_endpoint}}
+upstream_org: "{{upstream_org}}"
 workspace: {{workspace}}
 xolotl_key: {{xolotl_key}}
 xolotl_url: {{xolotl_url}}

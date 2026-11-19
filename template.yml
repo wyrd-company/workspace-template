@@ -16,6 +16,12 @@ interview:
     default: "{{ default_org }}"
     required: true
 
+  - id: upstream_org
+    type: text
+    prompt: Upstream GitHub account (empty if not forks)
+    description: The GitHub account this workspace's repositories were forked from. Leave it empty when they are not forks.
+    default: ""
+
   - id: workspace
     computed: "toha_target_name"
 

@@ -127,6 +127,20 @@ class RenderedJsonTests(unittest.TestCase):
         }])  # A bind mount is read-write by default; no read-only option or target suffix.
 
 
+    def config(self, index, answers):
+        text = (self.render(index, answers) / "config.yml").read_text()
+        return dict(line.split(": ", 1) if ": " in line else (line.rstrip(":"), "") for line in text.splitlines())
+
+    def test_upstream_org_is_rendered_when_set(self):
+        config = self.config("upstream-set", {"org": "boblangley", "upstream_org": "wyrd-company"})
+        self.assertEqual(config["org"], "boblangley")
+        self.assertEqual(config["upstream_org"], '"wyrd-company"')
+
+    def test_upstream_org_is_empty_by_default(self):
+        self.assertEqual(self.config("upstream-empty", {})["upstream_org"], '""')
+        self.assertEqual(self.config("upstream-blank", {"upstream_org": ""})["upstream_org"], '""')
+
+
 class JsoncParserTests(unittest.TestCase):
     """The checks above are only as good as the parser: it must reject what broke 0.3.0."""
 

@@ -35,6 +35,10 @@ operator's identity and key.
     └── {workspace}.code-workspace
 ```
 
+## Forks
+
+`upstream_org` is an optional answer, rendered into `config.yml` as `upstream_org`. It is empty when the workspace does not run on forks. When it is set, for example `wyrd-company`, the workspace's repositories under `org` are forks of the same-named repositories under `upstream_org`. Leave it empty when they are not forks. See [A workspace on forks](https://github.com/wyrd-company/skills/blob/main/standards/references/workspace.md#a-workspace-on-forks) for what a fork workspace does.
+
 ## Standardization
 
 `workspace-ansible` and `workspace-dotfiles` work together to standardize the
