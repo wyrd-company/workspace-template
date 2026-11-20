@@ -87,7 +87,7 @@ class RenderedJsonTests(unittest.TestCase):
         target = self.root / "targets" / f"w{index}"
         answers_file = self.root / f"answers-{index}.json"
         answers_file.write_text(json.dumps(
-            {"template": str(REPO), "answers": answers}))
+            {"template": str(REPO), "answers": {"remote": "", **answers}}))
         result = subprocess.run(["toha", "apply", str(REPO), str(target), "--answers", str(answers_file)],
                                 env=self.env, text=True, capture_output=True, timeout=120)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

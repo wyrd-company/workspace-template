@@ -42,7 +42,7 @@ test_render_matches_schema() {
     else
         miss "render_has_no_removed_key_questions" "obsolete interview field found"
     fi
-    output="$(render sample '{}')"
+    output="$(render sample '{"remote":""}')"
     [ "$(jq -r .status <<<"${output}")" = applied ] || { miss "render sample" "${output}"; return; }
     if ! block="$(dcb read-configuration --workspace-folder "${scratch}/targets/sample" | jq -cS "${jq_block}")"; then
         miss "dcb reads the rendered definition" "dcb failed"
@@ -90,7 +90,7 @@ test_render_refuses_workspace_name() {
             miss "render_refuses_workspace_name ${name:0:20}" "${output}"
         fi
     done
-    output="$(render "$(printf 'a%.0s' {1..63})" '{}')"
+    output="$(render "$(printf 'a%.0s' {1..63})" '{"remote":""}')"
     if [ "$(jq -r .status <<<"${output}")" = applied ]; then
         pass "render_accepts_63_character_workspace"
     else
