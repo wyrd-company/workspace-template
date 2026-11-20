@@ -8,7 +8,6 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 
 ```
 /etc/devcontainer/                 # r/o mount of the workspace .devcontainer folder
-│   ├── check-provisioning.sh      # postStartCommand: the playbook ran and the sockets work
 │   └── local/scripts.d/           # the one writable part: scripts the local feature runs at image build
 /etc/workspace/config.yml          # r/o mount of the workspace config.yml (the template answers)
 /etc/claude-code/ /etc/codex/      # harness system settings, rendered by workspace-ansible
@@ -127,15 +126,9 @@ Menagerie reads the container name from `runArgs`, selects policies, issues the 
 
 A workspace name holds lowercase letters, digits, `_` and `-`, starts with a letter or digit, and has at most 63 characters, so that it can name a Xolotl key and be a Wyrwood policy value. Any other name stops the interview before a file is written, with a template error on `validated_workspace` that quotes the rule. Toha has no way to raise a message of a template's own, so the error ends in `invalid float literal`. No answer or configured default can replace the name.
 
-### Start check
+### No start check
 
-`postStartCommand` runs `.devcontainer/check-provisioning.sh` at every start that `dcb` makes, as the remote user. A failure fails `dcb up`, and so the Menagerie job that called it. In order, it:
-
-1. Waits for the startup services to end, with a limit of 30 minutes (`PROVISIONING_WAIT_SECONDS`). `s6-rc -a list` refuses to list while the startup change runs. After it, the `ansible-setup` service is active only if the playbook succeeded. If it is not, the check fails, and the playbook's output is in the container's log.
-2. Asks `vault.sock` for its token (`bao token lookup`) and reads the Xolotl key (`bao kv get`), as Claude Code and Codex do. A key that was not issued fails here. It ignores any `BAO_AGENT_ADDR` and `VAULT_AGENT_ADDR`, so that these reads go to the declared socket.
-3. Asks `ssh-agent.sock` for its keys and signs with the first.
-
-Each socket operation has a limit of 30 seconds (`PROVISIONING_SOCKET_SECONDS`). It reports each broken socket, and discards the output of each check, so no token, key or server text reaches a log. A start by the Docker restart policy, such as after a host reboot, does not run it.
+The template has no `postStartCommand` and checks nothing at container start. The container cannot be tested until the dotfiles are applied: tools such as `bao` come from workspace-dotfiles, during the startup playbook, so a check at start would race them and fail the Menagerie job that started the container.
 
 ## Host prerequisites
 
