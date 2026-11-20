@@ -14,6 +14,7 @@
         {%- endif %}
         "ghcr.io/wyrd-company/devcontainers/antigravity-cli:1": {}, // Google subscription, signed in once
         "ghcr.io/wyrd-company/devcontainers/caddy:1": {},
+        "ghcr.io/wyrd-company/devcontainers/caddy-header-auth:1": {}, // local forward_auth helper for Xolotl MCP
         "ghcr.io/devcontainer-community/devcontainer-features/chezmoi.io:1": {},
         "ghcr.io/wyrd-company/devcontainers/claude-code-cli:latest": {}, // Anthropic models through Xolotl
         "ghcr.io/wyrd-company/devcontainers/codex-cli:latest": {}, // every other model through Xolotl
