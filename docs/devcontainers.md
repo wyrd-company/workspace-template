@@ -105,7 +105,7 @@ The policy's contract uses mount target `/run/wyrwood`. The access group is `100
 
 ## Xolotl
 
-Claude Code (Anthropic models), Codex CLI (every other model) and Grok CLI (grok-4.7) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). None holds an API key: the settings rendered by workspace-ansible read the key through `vault.sock`. Menagerie sets `MENAGERIE_XOLOTL_KEY` to its `<key policy>/<key name>` address in the container; the workspace configuration passes that address to workspace-ansible.
+Claude Code (Anthropic models), Codex CLI (every other model) and Grok CLI (grok-4.7) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). None holds an API key: the settings rendered by workspace-ansible read the key through `vault.sock`. Menagerie sets `MENAGERIE_XOLOTL_KEY` to its `<key policy>/<key name>` address in the container; the workspace configuration passes that address to workspace-ansible. Clients without dynamic MCP header helpers (such as Antigravity) reach Xolotl's MCP gateway through a loopback-only Caddy proxy (`http://127.0.0.1:18317/mcp`) backed by `caddy-header-auth`, which runs `/usr/local/bin/xolotl-mcp-headers` per request.
 
 `kv/xolotl` is the deployed Xolotl's KV v2 mount and prefix, in the `wyrwood` namespace it shares with Wyrwood.
 
