@@ -4,7 +4,7 @@ description: A devcontainer workspace with agent, workflow, and memory folders
 data:
   default_org: wyrd-company
   default_domain: wyrd.internal
-  default_nats_url: nats://nats.wyrd.internal:4222
+  default_nats_url: nats://nats.internal:4222
   default_otel_endpoint_url: otel.internal:4317
   workspace_name_must_be_lowercase_letters_digits_underscore_or_hyphen: at most 63 characters, starting with a letter or digit
 
@@ -46,6 +46,7 @@ interview:
   - id: remote
     type: git
     prompt: Workspace remote URL (empty for none)
+    default: "git@github.com:{{ default_org }}/workspaces.git"
 
   - id: domain_name
     type: text
