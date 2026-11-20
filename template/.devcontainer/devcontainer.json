@@ -292,9 +292,6 @@
         "WORKSPACE_NAME": "{{ name }}"
     },
 
-    // Every start: a failure here fails the job that started the container.
-    "postStartCommand": "bash /etc/devcontainer/check-provisioning.sh",
-
     "shutdownAction": "none",
     "overrideCommand": false,
 
