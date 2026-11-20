@@ -12,7 +12,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 /etc/workspace/config.yml          # r/o mount of the workspace config.yml (the template answers)
 /etc/claude-code/ /etc/codex/ /etc/grok/   # harness system settings, rendered by workspace-ansible
 /etc/dagu/ /etc/trowel/ /etc/opentelemetry-collector/   # service configs, rendered by workspace-ansible
-/home/vscode/                      # `vscode` profile: .claude, .codex, .pi, .t3/userdata are workspace mounts (state/)
+/home/vscode/                      # `vscode` profile: .claude, .codex, .gemini, .pi, .t3/userdata are workspace mounts (state/)
 │   ├── .agents/skills/            # built real-directory skills view read by Pi and Codex
 │   ├── .claude/skills/            # per-skill links into ~/.agents/skills for Claude Code
 │   ├── .local/share/skills/base/  # clean main clone of wyrd-company/skills; skill PRs use worktrees of it

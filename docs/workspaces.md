@@ -17,6 +17,7 @@ operator's identity and key.
 ├── repos/                         # /repos: bare clones memory.git, tasks.git, workflows.git
 ├── skills/                        # /skills (r/w): workspace-wide skill overlays
 ├── state/
+│   ├── antigravity/               # ~/.gemini
 │   ├── charm/                     # ~/.local/share/charm (Skate store: resource ledgers)
 │   ├── claude/                    # ~/.claude
 │   ├── codex/                     # ~/.codex
@@ -75,6 +76,7 @@ A backup does not restore agent credentials, history or databases. `repos`, `tas
 
 This stores agent-specific state. Git ignores all of it except each folder's `.gitignore`.
 
+- `antigravity` is where the Antigravity CLI keeps its sign-in, settings and conversations (`~/.gemini`); it holds an OAuth token
 - `charm` is the Skate store, where each thread's resource ledger is kept
 - `claude` is where the local claude profile is stored
 - `codex` is where the local codex profile is stored

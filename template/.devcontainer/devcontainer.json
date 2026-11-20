@@ -12,6 +12,7 @@
         {%- if 'bun' in sdks %}
         "ghcr.io/rails/devcontainer/features/bun": {},
         {%- endif %}
+        "ghcr.io/wyrd-company/devcontainers/antigravity-cli:1": {}, // Google subscription, signed in once
         "ghcr.io/wyrd-company/devcontainers/caddy:1": {},
         "ghcr.io/devcontainer-community/devcontainer-features/chezmoi.io:1": {},
         "ghcr.io/wyrd-company/devcontainers/claude-code-cli:latest": {}, // Anthropic models through Xolotl
@@ -97,6 +98,12 @@
         {   // Skate store: the resource ledger each thread keeps (see the ledger skill)
             "source": "${localWorkspaceFolder}/state/charm",
             "target": "/home/vscode/.local/share/charm",
+            "type": "bind"
+        },
+        // Antigravity ========================================================
+        {   // ~/.gemini: the sign-in (OAuth token), settings, personal config and conversations
+            "source": "${localWorkspaceFolder}/state/antigravity",
+            "target": "/home/vscode/.gemini",
             "type": "bind"
         },
         // Claude =============================================================
