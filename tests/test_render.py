@@ -113,6 +113,33 @@ class RenderedJsonTests(unittest.TestCase):
         self.assertIn("ghcr.io/wyrd-company/devcontainers/docker-outside-of-docker:latest", features)
         self.assertNotIn("ghcr.io/devcontainers/features/rust:1", features)
 
+    def test_workspace_skills_are_empty_and_mounted_read_write(self):
+        target = self.render("skills", {})
+        skills = target / "skills"
+        self.assertEqual(list(skills.iterdir()), [skills / ".gitkeep"])
+        self.assertEqual((skills / ".gitkeep").read_bytes(), b"")
+        mounts = parse_jsonc(target / ".devcontainer/devcontainer.json")["mounts"]
+        skills_mounts = [mount for mount in mounts if mount["target"].split(",")[0] == "/skills"]
+        self.assertEqual(skills_mounts, [{
+            "source": "${localWorkspaceFolder}/skills",
+            "target": "/skills",
+            "type": "bind",
+        }])  # A bind mount is read-write by default; no read-only option or target suffix.
+
+
+    def config(self, index, answers):
+        text = (self.render(index, answers) / "config.yml").read_text()
+        return dict(line.split(": ", 1) if ": " in line else (line.rstrip(":"), "") for line in text.splitlines())
+
+    def test_upstream_org_is_rendered_when_set(self):
+        config = self.config("upstream-set", {"org": "boblangley", "upstream_org": "wyrd-company"})
+        self.assertEqual(config["org"], "boblangley")
+        self.assertEqual(config["upstream_org"], '"wyrd-company"')
+
+    def test_upstream_org_is_empty_by_default(self):
+        self.assertEqual(self.config("upstream-empty", {})["upstream_org"], '""')
+        self.assertEqual(self.config("upstream-blank", {"upstream_org": ""})["upstream_org"], '""')
+
 
 class JsoncParserTests(unittest.TestCase):
     """The checks above are only as good as the parser: it must reject what broke 0.3.0."""

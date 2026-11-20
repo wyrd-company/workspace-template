@@ -15,6 +15,7 @@ operator's identity and key.
 ├── config.yml                     # /etc/workspace/config.yml (r/o), the template answers
 ├── docker/                        # $WORKSPACE_HOME/docker: compose projects, docker-outside-of-docker only
 ├── repos/                         # /repos: bare clones memory.git, tasks.git, workflows.git
+├── skills/                        # /skills (r/w): workspace-wide skill overlays
 ├── state/
 │   ├── charm/                     # ~/.local/share/charm (Skate store: resource ledgers)
 │   ├── claude/                    # ~/.claude
@@ -33,6 +34,10 @@ operator's identity and key.
     ├── AGENTS.md                  # workspace instructions
     └── {workspace}.code-workspace
 ```
+
+## Forks
+
+`upstream_org` is an optional answer, rendered into `config.yml` as `upstream_org`. It is empty when the workspace does not run on forks. When it is set, for example `wyrd-company`, the workspace's repositories under `org` are forks of the same-named repositories under `upstream_org`. Leave it empty when they are not forks. See [A workspace on forks](https://github.com/wyrd-company/skills/blob/main/standards/references/workspace.md#a-workspace-on-forks) for what a fork workspace does.
 
 ## Standardization
 
@@ -56,6 +61,7 @@ Menagerie commits and pushes the workspace's Git repository. The `.gitignore` fi
 | Path | In a backup |
 | --- | --- |
 | `.devcontainer/`, `config.yml`, `.toha.json`, `.gitignore` | Yes |
+| `skills/` | Yes. Workspace-wide skill overlays |
 | `state/.gitignore`, `state/*/.gitignore` | Yes, only these nine files under `state/` |
 | Anything else under `state/` | No |
 | `repos/`, `tasks/`, `workflows/` | No. Their contents are Git repositories with their own remotes |

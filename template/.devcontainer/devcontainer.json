@@ -17,6 +17,7 @@
         "ghcr.io/wyrd-company/devcontainers/claude-code-cli:latest": {}, // Anthropic models through Xolotl
         "ghcr.io/wyrd-company/devcontainers/codex-cli:latest": {}, // every other model through Xolotl
         "ghcr.io/wyrd-company/devcontainers/dagu:latest": {
+            "configPath": "/etc/dagu/config.yml",
             "host": "0.0.0.0" // reachable by the main server's caddy (see runArgs)
         },
         {%- if 'dart' in sdks %}
@@ -167,6 +168,12 @@
         {
             "source": "${localWorkspaceFolder}/repos",
             "target": "/repos",
+            "type": "bind"
+        },
+        // Skills =============================================================
+        {
+            "source": "${localWorkspaceFolder}/skills",
+            "target": "/skills",
             "type": "bind"
         },
         // T3Code =============================================================
