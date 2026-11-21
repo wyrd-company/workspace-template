@@ -113,6 +113,35 @@ class RenderedJsonTests(unittest.TestCase):
         self.assertIn("ghcr.io/wyrd-company/devcontainers/docker-outside-of-docker:latest", features)
         self.assertNotIn("ghcr.io/devcontainers/features/rust:1", features)
 
+    def test_rust_mounts_only_cargo_caches_and_keeps_rustup_first_on_path(self):
+        target = self.render("rust", {"sdks": ["rust"]})
+        devcontainer = parse_jsonc(target / ".devcontainer/devcontainer.json")
+        cargo_mounts = [mount for mount in devcontainer["mounts"] if mount["target"].startswith("/usr/local/cargo")]
+        self.assertEqual(cargo_mounts, [
+            {"source": "/workspaces/.shared/caches/cargo/registry", "target": "/usr/local/cargo/registry",
+             "type": "bind"},
+            {"source": "/workspaces/.shared/caches/cargo/git", "target": "/usr/local/cargo/git", "type": "bind"},
+        ])  # Never CARGO_HOME itself: bin/ holds the rust feature's rustup proxies.
+        self.assertEqual(devcontainer["features"]["ghcr.io/devcontainers/features/rust:1"],
+                         {"targets": "wasm32-unknown-unknown"})
+        local = parse_jsonc(target / ".devcontainer/local/devcontainer-feature.json")
+        self.assertEqual(local["containerEnv"]["PATH"], "/usr/local/cargo/bin:${PATH}")
+
+    def test_rust_targets_follow_the_answer(self):
+        features = lambda answers: parse_jsonc(
+            self.render(f"rust-{len(answers)}", answers) / ".devcontainer/devcontainer.json")["features"]
+        self.assertEqual(features({"sdks": ["rust"], "rust_targets": "wasm32-unknown-unknown, wasm32-wasip1"})
+                         ["ghcr.io/devcontainers/features/rust:1"],
+                         {"targets": "wasm32-unknown-unknown,wasm32-wasip1"})
+        self.assertEqual(features({"sdks": ["rust"], "rust_targets": "", "docker": "none"})
+                         ["ghcr.io/devcontainers/features/rust:1"], {})
+
+    def test_no_cargo_mounts_or_path_without_rust(self):
+        target = self.render("no-rust", {"sdks": ["go"]})
+        mounts = parse_jsonc(target / ".devcontainer/devcontainer.json")["mounts"]
+        self.assertFalse([mount for mount in mounts if "cargo" in mount["target"]])
+        self.assertNotIn("containerEnv", parse_jsonc(target / ".devcontainer/local/devcontainer-feature.json"))
+
     def test_workspace_skills_are_empty_and_mounted_read_write(self):
         target = self.render("skills", {})
         skills = target / "skills"

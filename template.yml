@@ -69,6 +69,13 @@ interview:
     options: [ bun, dart, dotnet, flutter, go, node, python, rust ]
     default: [ node ]
 
+  - id: rust_targets
+    type: text
+    prompt: Extra Rust targets (comma separated, empty for none)
+    description: Targets rustup installs beside the host target, such as wasm32-unknown-unknown for a WebAssembly build.
+    default: wasm32-unknown-unknown
+    when: "'rust' in sdks"
+
   - id: docker
     type: select
     prompt: Docker support

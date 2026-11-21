@@ -5,6 +5,11 @@
   "documentationURL": "https://github.com/wyrd-company/workspace-template",
   "description": "Installs necessary local features",
   "options": {},
+{%- if 'rust' in sdks %}
+  "containerEnv": {
+    "PATH": "/usr/local/cargo/bin:${PATH}"
+  },
+{%- endif %}
   "installsAfter": [
     "ghcr.io/wyrd-company/devcontainers/ansible",
     "ghcr.io/rails/devcontainer/features/bun",
