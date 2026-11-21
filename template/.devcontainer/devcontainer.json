@@ -52,7 +52,11 @@
         "ghcr.io/devcontainers/features/python:1": {},
         {%- endif %}
         {%- if 'rust' in sdks %}
-        "ghcr.io/devcontainers/features/rust:1": {},
+        "ghcr.io/devcontainers/features/rust:1": {
+            {%- if rust_targets %}
+            "targets": {{ rust_targets | replace(" ", "") | tojson }}
+            {%- endif %}
+        },
         {%- endif %}
         "ghcr.io/wyrd-company/devcontainers/sshd:latest": {},
         "ghcr.io/wyrd-company/devcontainers/t3code-server:latest": {},
@@ -87,7 +91,9 @@
         {"source":"/workspaces/.shared/caches/go-pkg","target":"/go/pkg","type":"bind"},
         {%- endif %}
         {%- if 'rust' in sdks %}
-        {"source":"/workspaces/.shared/caches/cargo","target":"/usr/local/cargo","type":"bind"},
+        // CARGO_HOME's caches only: its bin/ holds the rust feature's rustup proxies
+        {"source":"/workspaces/.shared/caches/cargo/registry","target":"/usr/local/cargo/registry","type":"bind"},
+        {"source":"/workspaces/.shared/caches/cargo/git","target":"/usr/local/cargo/git","type":"bind"},
         {%- endif %}
         // Caddy ==============================================================
         {

@@ -65,6 +65,10 @@ Examples of uses includes:
 
 Devcontainers can, optionally, run [Docker](https://www.docker.com) server under S6-overlay, either as [Docker-in-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-in-docker) or [Docker-out-of-Docker](https://github.com/wyrd-company/devcontainers/tree/main/src/features/docker-outside-of-docker). Docker-in-Docker is the normal case: its bind mounts resolve inside the devcontainer, so no host path is mirrored. Docker-outside-of-Docker is a special case for containers that help manage the host's Docker; it bind mounts the workspace's `docker/` folder at its host path, `$WORKSPACE_HOME/docker`, so the host daemon resolves the bind mounts of compose projects kept there. Toha creates the folder, and a backup ignores it, so a fresh clone needs it created again (see [Backups](workspaces.md#backups)).
 
+## Rust
+
+The `rust` SDK installs a rustup toolchain with the [devcontainers rust feature](https://github.com/devcontainers/features/tree/main/src/rust). Its `CARGO_HOME` is `/usr/local/cargo`, and `bin/` there holds rustup, cargo, rustc, clippy and rustfmt. The `rust_targets` answer, asked only with the `rust` SDK, lists targets rustup adds beside the host target (comma separated, `wasm32-unknown-unknown` by default). Homebrew can install its own `rust` formula as a build dependency of a formula with no bottle, and the Homebrew feature puts its `bin/` first on `PATH`. The local feature therefore puts `/usr/local/cargo/bin` back in front, so `cargo` and `rustc` are rustup's. Install Rust CLIs with Homebrew, not `cargo install`: `CARGO_HOME/bin` is part of the image and is replaced at each rebuild.
+
 ## Skills
 
 The dotfiles keep a clean `main` clone of [`wyrd-company/skills`](https://github.com/wyrd-company/skills) at `~/.local/share/skills/base`. Make skill changes in worktrees of that clone and submit them as PRs. `skills sync` builds the base with overlays and publishes real files at `~/.agents/skills`, which Pi and Codex read. Each `~/.claude/skills/<name>` link points into that published view for Claude Code. See the dotfiles’ [Skills guide](https://github.com/wyrd-company/workspace-dotfiles/blob/main/docs/skills.md) for the layout, migration, updates and rollback.
@@ -143,7 +147,7 @@ Folders under `/workspaces/.shared`, owned by the `vscode` user (UID 1000):
 | `ca-certificates` | The host's root certificates, with `homelab-root.crt` |
 | `caches/homebrew`, `caches/npm/global`, `caches/npm/local`, `caches/pnpm`, `caches/uv/packages`, `caches/uv/tools`, `caches/gh/extensions`, `caches/browsers` | Caches for every workspace |
 | `caches/go-pkg` | Go cache, for a workspace with the `go` SDK |
-| `caches/cargo` | Cargo cache, for a workspace with the `rust` SDK |
+| `caches/cargo/registry`, `caches/cargo/git` | Cargo's download caches, for a workspace with the `rust` SDK. They are mounted on those folders of `CARGO_HOME` (`/usr/local/cargo`) only, so the rust feature's `bin/` stays in the image |
 | `mnemonic-vault` | Clone of `mnemonic-vault`, branch `main` |
 
 ### `homelab` network
