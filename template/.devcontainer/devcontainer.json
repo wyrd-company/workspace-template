@@ -168,8 +168,8 @@
             "type": "bind"
         },
         // Mnemonic ===========================================================
-        {   // mnemonic user vault (host clone of mnemonic-vault#main, shared by every workspace on the host)
-            "source": "/workspaces/.shared/mnemonic-vault",
+        {   // Mnemonic user vault shared by workspaces with the same GitHub account
+            "source": "/workspaces/.shared/mnemonic-vaults/{{ org | lower }}",
             "target": "/home/vscode/mnemonic-vault",
             "type": "bind"
         },

@@ -19,7 +19,7 @@ All devcontainers in the workspace use Wyrd Company's [Ubuntu base image](https:
 │   ├── .local/share/charm/        # Skate store (resource ledgers), a workspace mount (state/charm)
 │   ├── .local/share/dagu/         # Dagu state, a workspace mount (state/workflows)
 │   ├── .local/state/git-operators/ # each T3 thread's Git operator, a workspace mount (state/git-operators)
-│   └── mnemonic-vault/            # user-level vault, host clone shared by every workspace
+│   └── mnemonic-vault/            # user-level vault shared by workspaces with the same GitHub account
 /repos/                            # bare clones: memory.git, tasks.git, workflows.git
 /skills/                           # r/w mount of the workspace skills/ folder: workspace-wide skill overlays
 /tasks/                            # workspace tasks: orphan branch workspace/{workspace} of tasks
@@ -148,7 +148,12 @@ Folders under `/workspaces/.shared`, owned by the `vscode` user (UID 1000):
 | `caches/homebrew`, `caches/npm/global`, `caches/npm/local`, `caches/pnpm`, `caches/uv/packages`, `caches/uv/tools`, `caches/gh/extensions`, `caches/browsers` | Caches for every workspace |
 | `caches/go-pkg` | Go cache, for a workspace with the `go` SDK |
 | `caches/cargo/registry`, `caches/cargo/git` | Cargo's download caches, for a workspace with the `rust` SDK. They are mounted on those folders of `CARGO_HOME` (`/usr/local/cargo`) only, so the rust feature's `bin/` stays in the image |
-| `mnemonic-vault` | Clone of `mnemonic-vault`, branch `main` |
+| `mnemonic-vaults/<org>` | Checkout of `main` from the GitHub account's private `memory` repository |
+
+Before creating or updating a workspace, provision its vault at
+`/workspaces/.shared/mnemonic-vaults/<org>`. Use the lowercase value of the
+workspace template's `org` answer for `<org>`. The container mounts this checkout at
+`/home/vscode/mnemonic-vault`.
 
 ### `homelab` network
 
