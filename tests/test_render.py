@@ -142,6 +142,15 @@ class RenderedJsonTests(unittest.TestCase):
         self.assertFalse([mount for mount in mounts if "cargo" in mount["target"]])
         self.assertNotIn("containerEnv", parse_jsonc(target / ".devcontainer/local/devcontainer-feature.json"))
 
+    def test_mnemonic_vault_uses_lowercase_org(self):
+        target = self.render("mnemonic", {"org": "Iradesa", "upstream_org": "wyrd-company"})
+        mounts = parse_jsonc(target / ".devcontainer/devcontainer.json")["mounts"]
+        self.assertEqual([mount for mount in mounts if mount["target"] == "/home/vscode/mnemonic-vault"], [{
+            "source": "/workspaces/.shared/mnemonic-vaults/iradesa",
+            "target": "/home/vscode/mnemonic-vault",
+            "type": "bind",
+        }])
+
     def test_workspace_skills_are_empty_and_mounted_read_write(self):
         target = self.render("skills", {})
         skills = target / "skills"

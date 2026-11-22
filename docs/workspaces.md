@@ -105,7 +105,7 @@ This holds the bare clones the worktrees are checked out from: `tasks/` and `wor
 
 ### `memory`
 
-I use [`mnemonic`](https://github.com/danielmarbach/mnemonic) MCP server as a ubiquitous memory system for agents. Each project checks out its own branch of the `memory` repository for its memories. A user-level vault, shared by every workspace on the host, is mounted at `~/mnemonic-vault`.
+I use [`mnemonic`](https://github.com/danielmarbach/mnemonic) MCP server as a ubiquitous memory system for agents. Each project checks out its own branch of the `memory` repository for its memories. Workspaces with the same GitHub account share a user-level vault mounted at `~/mnemonic-vault`. The vault is a checkout of `main` from that account's private `memory` repository.
 
 I depart from the normal usage documented by `mnemonic` and use one memory vault for all repos in a project, git ignoring any .mnemonic folder globally.
 
