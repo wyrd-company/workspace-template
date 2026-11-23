@@ -301,6 +301,7 @@
         "ORG": "{{ org }}",
         "PNPM_HOME": "/home/vscode/.npm-global/bin",
         "SSH_AUTH_SOCK": "/run/wyrwood/ssh-agent.sock",
+        "TZ": {{ timezone | tojson }},
         "VAULT_ADDR": "unix:///run/wyrwood/vault.sock",
         "WORKSPACE": "{{ workspace }}",
         "WORKSPACE_HOME": "${localWorkspaceFolder}", // where the workspace lives on the host disk

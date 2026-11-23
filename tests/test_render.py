@@ -106,6 +106,16 @@ class RenderedJsonTests(unittest.TestCase):
                     except ValueError as error:  # JSONDecodeError is a ValueError
                         self.fail(f"{path.relative_to(target)} for {answers}: {error}")
 
+    def test_container_timezone_follows_the_answer(self):
+        for index, answers, expected in (
+            ("timezone-default", {}, "America/Los_Angeles"),
+            ("timezone-custom", {"timezone": "Europe/Paris"}, "Europe/Paris"),
+        ):
+            with self.subTest(**answers):
+                target = self.render(index, answers)
+                devcontainer = parse_jsonc(target / ".devcontainer/devcontainer.json")
+                self.assertEqual(devcontainer["containerEnv"]["TZ"], expected)
+
     def test_features_follow_the_answers(self):
         features = parse_jsonc(self.render("features", {"sdks": ["go"], "docker": "docker-outside-of-docker"})
                                / ".devcontainer/devcontainer.json")["features"]

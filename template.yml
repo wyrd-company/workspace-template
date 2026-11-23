@@ -43,6 +43,13 @@ interview:
     default: "{{ workspace | title }}"
     required: true
 
+  - id: timezone
+    type: text
+    prompt: Container timezone
+    description: IANA timezone name to use inside the devcontainer
+    default: America/Los_Angeles
+    required: true
+
   - id: remote
     type: git
     prompt: Workspace remote URL (empty for none)
