@@ -63,7 +63,7 @@
         "ghcr.io/wyrd-company/trowel/trowel:0": {
             "natsUrl": "{{ nats_url }}"
         },
-        "ghcr.io/wyrd-company/devcontainers/vector:1": {
+        "ghcr.io/wyrd-company/devcontainers/vector:2": {
             "watchConfigMethod": "poll"
         }
     },
