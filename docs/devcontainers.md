@@ -107,6 +107,19 @@ Later rebuilds keep the name, so the binding and directory carry over.
 
 The policy's contract uses mount target `/run/wyrwood`. The access group is `1000` (the `vscode` user). On the host, the `wyrwood` user must be in the group with GID 1000.
 
+## Vector
+
+[Vector](https://vector.dev/) watches pipeline files in the workspace's `config/vector/` directory. The version 2 devcontainer feature reads OpenBao secrets through the Wyrwood socket using the base image's `bao-secret` helper.
+
+For an existing workspace, make the pipeline edits and rebuild together.
+
+1. On the host that builds the workspace, run `docker pull ghcr.io/wyrd-company/devcontainers/base:resolute` to refresh the base image that provides `bao-secret`.
+2. Replace each `SECRET[environment.NAME]` reference with `SECRET[openbao.<mount>/<path>/<field>]` for the same value and verify that the workspace's Wyrwood policy grants access to that secret. If Vector 1 is still running, it reports `reload aborted` and keeps the current pipelines. Rebuild with Vector 2 immediately after the edits. Restarting the old container with the new references would prevent its pipelines from loading.
+3. If an OpenBao Agent template writes `/run/openbao/secrets/vector.env`, remove the template and delete the file after the rebuild.
+4. If the workspace has pipelines, run `vector-service validate` inside it to check them and resolve their secret references.
+
+See the [Vector feature upgrade guide](https://github.com/wyrd-company/devcontainers/tree/main/src/features/vector#upgrading-from-version-1).
+
 ## Xolotl
 
 Claude Code (Anthropic models), Codex CLI (every other model) and Grok CLI (grok-4.7) talk to the [Xolotl](https://wyrd.foo/docs/xolotl/) gateway (`xolotl_url`). None holds an API key: the settings rendered by workspace-ansible read the key through `vault.sock`. Menagerie sets `MENAGERIE_XOLOTL_KEY` to its `<key policy>/<key name>` address in the container; the workspace configuration passes that address to workspace-ansible. Clients without dynamic MCP header helpers (such as Antigravity) reach Xolotl's MCP gateway through a loopback-only Caddy proxy (`http://127.0.0.1:18317/mcp`) backed by `caddy-header-auth`, which runs `/usr/local/bin/xolotl-mcp-headers` per request.
