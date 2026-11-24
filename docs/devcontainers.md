@@ -111,7 +111,14 @@ The policy's contract uses mount target `/run/wyrwood`. The access group is `100
 
 [Vector](https://vector.dev/) watches pipeline files in the workspace's `config/vector/` directory. The version 2 devcontainer feature reads OpenBao secrets through the Wyrwood socket using the base image's `bao-secret` helper.
 
-Before rebuilding an existing workspace with version 2, replace each `SECRET[environment.NAME]` reference with `SECRET[openbao.<mount>/<path>/<field>]` for the same value and verify that the workspace's Wyrwood policy grants access to that secret. If an OpenBao Agent template writes `/run/openbao/secrets/vector.env`, remove the template and delete the file. After the rebuild, run `vector-service validate` inside the workspace to check the pipelines and resolve their secret references. See the [Vector feature upgrade guide](https://github.com/wyrd-company/devcontainers/tree/main/src/features/vector#upgrading-from-version-1).
+For an existing workspace, make the pipeline edits and rebuild together.
+
+1. On the host that builds the workspace, run `docker pull ghcr.io/wyrd-company/devcontainers/base:resolute` to refresh the base image that provides `bao-secret`.
+2. Replace each `SECRET[environment.NAME]` reference with `SECRET[openbao.<mount>/<path>/<field>]` for the same value and verify that the workspace's Wyrwood policy grants access to that secret. If Vector 1 is still running, it reports `reload aborted` and keeps the current pipelines. Rebuild with Vector 2 immediately after the edits. Restarting the old container with the new references would prevent its pipelines from loading.
+3. If an OpenBao Agent template writes `/run/openbao/secrets/vector.env`, remove the template and delete the file after the rebuild.
+4. If the workspace has pipelines, run `vector-service validate` inside it to check them and resolve their secret references.
+
+See the [Vector feature upgrade guide](https://github.com/wyrd-company/devcontainers/tree/main/src/features/vector#upgrading-from-version-1).
 
 ## Xolotl
 
