@@ -177,16 +177,16 @@ class RenderedJsonTests(unittest.TestCase):
     def test_local_feature_lists_every_home_mount(self):
         """The local feature creates the parents of these targets as the user; Docker would create them as root."""
         home = "/home/vscode/"
-        mounted = set()
         for index, answers in enumerate(answer_sets()):
-            target = self.render(f"home-mounts-{index}", answers)
-            mounts = parse_jsonc(target / ".devcontainer/devcontainer.json")["mounts"]
-            mounted |= {mount["target"].split(",")[0][len(home):] for mount in mounts
-                        if mount["target"].startswith(home)}
-            install = (target / ".devcontainer/local/install.sh").read_text()
-        listed = re.search(r"^home_mount_targets=\(\n(.*?)\n\)", install, re.S | re.M)
-        self.assertIsNotNone(listed, "install.sh has no home_mount_targets array")
-        self.assertEqual(sorted(listed.group(1).split()), sorted(mounted))
+            with self.subTest(**answers):
+                target = self.render(f"home-mounts-{index}", answers)
+                mounts = parse_jsonc(target / ".devcontainer/devcontainer.json")["mounts"]
+                mounted = {mount["target"].split(",")[0][len(home):] for mount in mounts
+                           if mount["target"].startswith(home)}
+                install = (target / ".devcontainer/local/install.sh").read_text()
+                listed = re.search(r"^home_mount_targets=\(\n(.*?)\n\)", install, re.S | re.M)
+                self.assertIsNotNone(listed, "install.sh has no home_mount_targets array")
+                self.assertEqual(sorted(listed.group(1).split()), sorted(mounted))
 
 
     def config(self, index, answers):
