@@ -90,6 +90,15 @@ download_openbao() {
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
 apt-get install -y --no-install-recommends ca-certificates curl jq iputils-ping snap
+# Chrome's runtime libraries and fonts. agent-browser and VHS download their own Chrome builds, and T3 previews
+# need the same libraries; without them the browser exits before it starts.
+apt-get install -y --no-install-recommends \
+    libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 libatspi2.0-0t64 libcups2t64 \
+    libdrm2 libgbm1 libpango-1.0-0 libcairo2 libxkbcommon0 libxcomposite1 \
+    libxdamage1 libxfixes3 libxrandr2 libasound2t64 \
+    fontconfig fonts-liberation fonts-noto-color-emoji
+# ImageMagick hands PDF, PostScript and EPS input to Ghostscript.
+apt-get install -y --no-install-recommends ghostscript
 
 # Every bind mount target under the remote user's home, as in devcontainer.json's "mounts" (a test keeps them equal).
 # Docker creates a missing parent of a mount target as root, which leaves the user unable to write beside the mount:

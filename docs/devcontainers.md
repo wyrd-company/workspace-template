@@ -41,7 +41,7 @@ failed run left unfinished.
 
 The workspace-local feature, `.devcontainer/local/install.sh`, runs as root at image build, after the other features. It:
 
-- installs the system packages the workspace's tools need;
+- installs the system packages the workspace's tools need, including the libraries and fonts Chrome needs to start: `agent-browser`, VHS and T3 previews each run a Chrome build, and ImageMagick reads PDF and PostScript through Ghostscript;
 - creates each missing folder above a bind mount target in the `vscode` home, owned by `vscode`. Docker creates a missing parent of a mount target as root when it starts the container, which leaves `vscode` unable to write beside the mount: `agent-browser`, for one, cannot take its session lock in `~/.agent-browser`. The script's `home_mount_targets` lists every mount target under the home, and `tests/test_render.py` fails when it differs from the rendered `mounts`, so add a new home mount to both;
 - runs each executable in `scripts.d/`, in order.
 
