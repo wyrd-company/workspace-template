@@ -37,6 +37,14 @@ workspace branches are created as orphan branches and pushed, and `/workflows/lo
 toha template on `main`. Re-running it is a no-op for anything already set up, and resumes a worktree a
 failed run left unfinished.
 
+## Local feature
+
+The workspace-local feature, `.devcontainer/local/install.sh`, runs as root at image build, after the other features. It:
+
+- installs the system packages the workspace's tools need;
+- creates each missing folder above a bind mount target in the `vscode` home, owned by `vscode`. Docker creates a missing parent of a mount target as root when it starts the container, which leaves `vscode` unable to write beside the mount: `agent-browser`, for one, cannot take its session lock in `~/.agent-browser`. The script's `home_mount_targets` lists every mount target under the home, and `tests/test_render.py` fails when it differs from the rendered `mounts`, so add a new home mount to both;
+- runs each executable in `scripts.d/`, in order.
+
 ## T3Code Server
 
 [T3Code server](https://t3.codes), a coding agent control plane, is [installed](https://github.com/wyrd-company/devcontainers/tree/main/src/features/t3code-server) on each devcontainer and runs as an S6-overlay service. This is the primary agentic access to the devcontainer.
