@@ -1,9 +1,12 @@
 ansible_repo: {{ansible_repo}}
+domain_name: {{domain_name}}
 dotfiles_repo: {{dotfiles_repo}}
 name: {{name}}
 nats_url: {{nats_url}}
 org: {{org}}
 otlp_endpoint: {{otlp_endpoint}}
+sdks:
+{{ sdks | toyaml | indent(2) }}
 upstream_org: "{{upstream_org}}"
 workspace: {{workspace}}
 xolotl_key: "{% raw %}{{ lookup('env', 'MENAGERIE_XOLOTL_KEY') }}{% endraw %}"
